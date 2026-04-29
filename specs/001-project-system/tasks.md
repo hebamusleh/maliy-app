@@ -95,12 +95,12 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Create ProjectDashboard component in src/components/projects/ProjectDashboard.tsx
-- [ ] T021 [P] [US3] Create utility functions for stats calculation in src/lib/project-stats.ts
-- [ ] T022 [US3] Create API route for dashboard data in src/app/api/projects/[id]/dashboard/route.ts
-- [ ] T023 [US3] Add Recharts P&L chart to dashboard
-- [ ] T024 [US3] Add cash flow visualization with Recharts
-- [ ] T025 [US3] Implement insights display and data fetching
+- [x] T020 [P] [US3] Create ProjectDashboard component in src/components/projects/ProjectDashboard.tsx
+- [x] T021 [P] [US3] Create utility functions for stats calculation in src/lib/project-stats.ts
+- [x] T022 [US3] Create API route for dashboard data in src/app/api/projects/[id]/dashboard/route.ts
+- [x] T023 [US3] Add Recharts P&L chart to dashboard
+- [x] T024 [US3] Add cash flow visualization with Recharts
+- [x] T025 [US3] Implement insights display and data fetching
 
 **Checkpoint**: At this point, User Story 3 should be fully functional and testable independently
 
@@ -110,14 +110,14 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Quality improvements, performance, and advanced features
 
-- [ ] T026 [P] Set up Web Speech API for voice input in src/lib/speech.ts
-- [ ] T027 [P] Configure OpenRouter AI client in src/lib/ai.ts
-- [ ] T028 Add comprehensive error boundaries and error handling
-- [ ] T029 Implement loading states and skeleton components
-- [ ] T030 Add accessibility improvements (ARIA labels, keyboard navigation)
-- [ ] T031 Performance optimization (lazy loading, memoization)
-- [ ] T032 Add unit tests for critical components
-- [ ] T033 Final RTL and Arabic localization polish
+- [x] T026 [P] Set up Web Speech API for voice input in src/lib/speech.ts
+- [x] T027 [P] Configure OpenRouter AI client in src/lib/ai.ts
+- [x] T028 Add comprehensive error boundaries and error handling
+- [x] T029 Implement loading states and skeleton components
+- [x] T030 Add accessibility improvements (ARIA labels, keyboard navigation)
+- [x] T031 Performance optimization (lazy loading, memoization)
+- [x] T032 Add unit tests for critical components
+- [x] T033 Final RTL and Arabic localization polish
 
 ---
 

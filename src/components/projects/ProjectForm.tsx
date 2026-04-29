@@ -66,12 +66,14 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
           <label className="block text-sm font-medium text-foreground mb-2">
             الأيقونة
           </label>
-          <div className="grid grid-cols-6 gap-2">
+          <div className="grid grid-cols-6 gap-2" role="list">
             {icons.map((icon) => (
               <button
                 key={icon}
                 type="button"
                 onClick={() => setValue("icon", icon)}
+                aria-pressed={watch("icon") === icon}
+                aria-label={`اختر الأيقونة ${icon}`}
                 className={`p-2 border rounded-md hover:bg-gray-100 ${
                   watch("icon") === icon
                     ? "border-amber bg-amber/10"
@@ -91,7 +93,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
           <label className="block text-sm font-medium text-foreground mb-2">
             نوع المشروع
           </label>
-          <div className="space-y-2">
+          <div className="space-y-2" role="radiogroup" aria-label="نوع المشروع">
             {[
               { value: "personal", label: "شخصي" },
               { value: "business", label: "تجاري" },
@@ -103,6 +105,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
                   value={value}
                   {...register("type")}
                   className="ml-2"
+                  aria-checked={selectedType === value}
                 />
                 {label}
               </label>

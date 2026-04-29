@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\msi\\\\OneDrive\\\\Desktop\\\\maliy\\\\maliy-application\" && npm install -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom @testing-library/user-event ts-node @types/jest 2>&1 | tail -5)",
+      "Bash(cd \"C:\\\\Users\\\\msi\\\\OneDrive\\\\Desktop\\\\maliy\\\\maliy-application\" && npm test -- --passWithNoTests 2>&1 | tail -50)",
+      "Bash(cd \"C:\\\\Users\\\\msi\\\\OneDrive\\\\Desktop\\\\maliy\\\\maliy-application\" && npm test 2>&1 | tail -20)",
+      "Bash(cd \"C:\\\\Users\\\\msi\\\\OneDrive\\\\Desktop\\\\maliy\\\\maliy-application\" && npx tsc --noEmit 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\msi\\\\OneDrive\\\\Desktop\\\\maliy\\\\maliy-application\" && npm test 2>&1 | tail -15)"
+    ]
+  }
+}

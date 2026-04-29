@@ -54,12 +54,18 @@ export default function CardLinkFormComponent({
     <Card className="max-w-md mx-auto">
       <h3 className="text-lg font-heading font-bold mb-4">ربط بطاقة مصرفية</h3>
 
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onFormSubmit)}
+        className="space-y-4"
+        aria-label="نموذج ربط بطاقة"
+      >
         <Input
           label="آخر 4 أرقام من البطاقة"
           {...register("last4")}
           placeholder="1234"
           error={errors.last4?.message}
+          inputMode="numeric"
+          pattern="\d{4}"
         />
 
         {error && <p className="text-sm text-red-600">{error}</p>}

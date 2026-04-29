@@ -3,6 +3,7 @@
 import Card from "@/components/ui/Card";
 import { prepareChartData } from "@/lib/project-stats";
 import { ProjectStats, Transaction } from "@/types/project";
+import { memo, useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -21,15 +22,18 @@ interface ProjectDashboardProps {
   insights: string[];
 }
 
-export default function ProjectDashboard({
+function ProjectDashboard({
   stats,
   transactions,
   insights,
 }: ProjectDashboardProps) {
-  const chartData = prepareChartData(transactions);
+  const chartData = useMemo(
+    () => prepareChartData(transactions),
+    [transactions],
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="region" aria-label="لوحة تحكم المشروع">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
@@ -70,70 +74,78 @@ export default function ProjectDashboard({
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="text-lg font-heading font-bold mb-4">
-            الأرباح والخسائر الشهرية
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => [
-                    typeof value === "number"
-                      ? `${value.toFixed(2)} ريال`
-                      : `${value} ريال`,
-                    "",
-                  ]}
-                  labelFormatter={(label) => `الشهر: ${label}`}
-                />
-                <Bar dataKey="income" fill="#10b981" name="الدخل" />
-                <Bar dataKey="expenses" fill="#ef4444" name="المصروفات" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <div role="region" aria-label="الرسم البياني للأرباح والخسائر">
+          <Card>
+            <h3 className="text-lg font-heading font-bold mb-4">
+              الأرباح والخسائر الشهرية
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value: any) => [
+                      typeof value === "number"
+                        ? `${value.toFixed(2)} ريال`
+                        : `${value} ريال`,
+                      "",
+                    ]}
+                    labelFormatter={(label) => `الشهر: ${label}`}
+                  />
+                  <Bar dataKey="income" fill="#10b981" name="الدخل" />
+                  <Bar dataKey="expenses" fill="#ef4444" name="المصروفات" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
 
-        <Card>
-          <h3 className="text-lg font-heading font-bold mb-4">
-            صافي التدفق النقدي
-          </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip
-                  formatter={(value: any) => [
-                    typeof value === "number"
-                      ? `${value.toFixed(2)} ريال`
-                      : `${value} ريال`,
-                    "صافي الربح",
-                  ]}
-                  labelFormatter={(label) => `الشهر: ${label}`}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="net"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: "#3b82f6" }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+        <div role="region" aria-label="الرسم البياني لصافي التدفق النقدي">
+          <Card>
+            <h3 className="text-lg font-heading font-bold mb-4">
+              صافي التدفق النقدي
+            </h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip
+                    formatter={(value: any) => [
+                      typeof value === "number"
+                        ? `${value.toFixed(2)} ريال`
+                        : `${value} ريال`,
+                      "صافي الربح",
+                    ]}
+                    labelFormatter={(label) => `الشهر: ${label}`}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="net"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={{ fill: "#3b82f6" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
       </div>
 
       {/* Insights */}
-      <Card>
+      <Card role="region" aria-label="رؤى ذكية">
         <h3 className="text-lg font-heading font-bold mb-4">رؤى ذكية</h3>
-        <div className="space-y-2">
+        <div className="space-y-2" role="list">
           {insights.map((insight, index) => (
-            <div key={index} className="p-3 bg-blue-50 rounded-md">
+            <div
+              key={index}
+              role="listitem"
+              className="p-3 bg-blue-50 rounded-md"
+            >
               <p className="text-sm text-blue-800">{insight}</p>
             </div>
           ))}
@@ -177,3 +189,5 @@ export default function ProjectDashboard({
     </div>
   );
 }
+
+export default memo(ProjectDashboard);
