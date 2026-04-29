@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ماليّ — مساعدك المالي الذكي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink: #0E1B2C; --ink-2: #142339; --ink-3: #1B2D48;
+    --paper: #F4EFE6; --paper-2: #ECE5D7; --paper-3: #E2D9C6;
+    --amber: #C8853A; --amber-2: #E0A050; --amber-soft: #F0CC85;
+    --rose: #B85C5C; --sage: #6B8E6B;
+    --line: rgba(14, 27, 44, 0.12); --line-strong: rgba(14, 27, 44, 0.22);
+    --shadow: 0 1px 2px rgba(14,27,44,0.04), 0 8px 24px rgba(14,27,44,0.06);
+    --shadow-lg: 0 2px 4px rgba(14,27,44,0.06), 0 24px 48px rgba(14,27,44,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); font-family: 'Noto Naskh Arabic', serif; -webkit-font-smoothing: antialiased; }
+  body {
+    background-image:
+      radial-gradient(1200px 600px at 90% -10%, rgba(200,133,58,0.08), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(14,27,44,0.06), transparent 60%);
+    min-height: 100vh;
+  }
+
+  .app { display: grid; grid-template-columns: 280px 1fr 400px; gap: 24px; max-width: 1480px; margin: 0 auto; padding: 24px; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--ink); color: var(--paper); border-radius: 24px; padding: 28px 22px; position: sticky; top: 24px; height: calc(100vh - 48px); display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar::before { content: ""; position: absolute; inset: 0; background: radial-gradient(400px 200px at 100% 0%, rgba(224,160,80,0.18), transparent 70%), radial-gradient(300px 200px at 0% 100%, rgba(224,160,80,0.08), transparent 70%); pointer-events: none; }
+  .brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+  .brand-mark { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, var(--amber-2), var(--amber)); display: grid; place-items: center; font-family: 'Reem Kufi', sans-serif; font-weight: 700; font-size: 22px; color: var(--ink); box-shadow: inset 0 -2px 6px rgba(0,0,0,0.18), 0 6px 18px rgba(200,133,58,0.4); }
+  .brand-text h1 { font-family: 'Reem Kufi', sans-serif; font-size: 22px; font-weight: 600; letter-spacing: -0.5px; }
+  .brand-text span { font-size: 11px; opacity: 0.6; letter-spacing: 1px; }
+
+  .nav { margin-top: 28px; display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 1; overflow-y: auto; flex: 1; }
+  .nav::-webkit-scrollbar { width: 4px; }
+  .nav::-webkit-scrollbar-thumb { background: rgba(244,239,230,0.1); border-radius: 2px; }
+  .nav-label { font-size: 10px; letter-spacing: 2px; opacity: 0.45; padding: 0 12px; margin: 18px 0 8px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; color: rgba(244,239,230,0.7); cursor: pointer; font-size: 14.5px; transition: all 0.2s; font-family: 'Reem Kufi', sans-serif; font-weight: 500; }
+  .nav-item:hover { background: rgba(244,239,230,0.06); color: var(--paper); }
+  .nav-item.active { background: rgba(244,239,230,0.08); color: var(--paper); box-shadow: inset 0 0 0 1px rgba(224,160,80,0.25); }
+  .nav-item.active::before { content: ""; width: 4px; height: 18px; background: var(--amber-2); border-radius: 2px; margin-left: -4px; }
+  .nav-item svg { width: 18px; height: 18px; opacity: 0.85; }
+  .nav-item .badge { margin-right: auto; background: var(--amber); color: var(--ink); font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 700; }
+  .nav-item .badge.pulse { background: var(--rose); color: var(--paper); animation: pulseBadge 2s ease-in-out infinite; }
+  @keyframes pulseBadge { 0%,100% { box-shadow: 0 0 0 0 rgba(184,92,92,0.4); } 50% { box-shadow: 0 0 0 6px rgba(184,92,92,0); } }
+
+  .learn-card { margin-top: 18px; background: rgba(244,239,230,0.05); border: 1px solid rgba(244,239,230,0.10); border-radius: 14px; padding: 14px; position: relative; z-index: 1; }
+  .learn-card .head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .learn-card .pulse-dot { width: 8px; height: 8px; background: var(--sage); border-radius: 50%; animation: pulseLearn 2s infinite; }
+  @keyframes pulseLearn { 0%,100%{box-shadow:0 0 0 0 rgba(107,142,107,0.6);} 50%{box-shadow:0 0 0 6px rgba(107,142,107,0);} }
+  .learn-card .label { font-family: 'Reem Kufi'; font-size: 11.5px; font-weight: 500; }
+  .learn-card .value { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500; }
+  .learn-card .sub { font-size: 11px; opacity: 0.55; margin-top: 2px; }
+  .learn-bar { margin-top: 10px; height: 4px; background: rgba(244,239,230,0.10); border-radius: 2px; overflow: hidden; }
+  .learn-bar > i { display: block; height: 100%; width: 87%; background: linear-gradient(90deg, var(--sage), var(--amber-2)); border-radius: 2px; }
+
+  .sidebar-footer { margin-top: 12px; position: relative; z-index: 1; padding: 14px; background: rgba(244,239,230,0.04); border-radius: 14px; border: 1px solid rgba(244,239,230,0.08); }
+  .user-row { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #E0A050, #B85C5C); display: grid; place-items: center; font-family: 'Reem Kufi'; font-weight: 700; color: var(--ink); }
+  .user-row .info { flex: 1; }
+  .user-row .info b { display: block; font-family: 'Reem Kufi'; font-size: 14px; }
+  .user-row .info small { opacity: 0.55; font-size: 11px; }
+
+  /* MAIN */
+  .main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+  .topbar { display: flex; align-items: center; gap: 16px; background: var(--paper-2); padding: 14px 18px; border-radius: 18px; border: 1px solid var(--line); }
+  .greeting { font-family: 'Reem Kufi'; font-size: 18px; font-weight: 500; }
+  .greeting b { font-weight: 600; color: var(--amber); }
+  .topbar .search { margin-right: auto; display: flex; align-items: center; gap: 8px; background: var(--paper); padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); width: 280px; }
+  .topbar .search input { border: 0; background: transparent; outline: none; flex: 1; font-family: inherit; font-size: 14px; color: var(--ink); }
+  .icon-btn { width: 38px; height: 38px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); display: grid; place-items: center; cursor: pointer; position: relative; color: var(--ink); }
+  .icon-btn:hover { background: var(--paper-3); }
+  .icon-btn .dot { position: absolute; top: 8px; left: 8px; width: 8px; height: 8px; background: var(--rose); border-radius: 50%; border: 2px solid var(--paper); }
+
+  /* Page system */
+  .page { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.3s ease-out; }
+  .page.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .page-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px; gap: 16px; flex-wrap: wrap; }
+  .page-head .ttl h1 { font-family: 'Reem Kufi'; font-size: 26px; font-weight: 600; letter-spacing: -0.5px; }
+  .page-head .ttl p { font-size: 13px; opacity: 0.6; margin-top: 4px; }
+  .page-head .actions { display: flex; gap: 8px; }
+  .btn { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font-family: 'Reem Kufi'; font-size: 13px; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--paper-3); }
+  .btn.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .btn.primary:hover { background: var(--ink-2); }
+  .btn.amber { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+  .btn.amber:hover { background: var(--amber-2); }
+
+  /* REVIEW BANNER */
+  .review-banner { background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%); color: var(--paper); border-radius: 20px; padding: 18px 22px; display: flex; align-items: center; gap: 18px; position: relative; overflow: hidden; cursor: pointer; box-shadow: var(--shadow); }
+  .review-banner::before { content: ""; position: absolute; right: -50px; top: -30px; width: 200px; height: 200px; background: radial-gradient(circle, rgba(224,160,80,0.18), transparent 60%); pointer-events: none; }
+  .review-banner .pile { width: 56px; height: 56px; border-radius: 16px; background: rgba(224,160,80,0.18); display: grid; place-items: center; font-family: 'Fraunces', serif; font-size: 24px; color: var(--amber-2); flex-shrink: 0; position: relative; }
+  .review-banner .pile::after { content: ""; position: absolute; inset: -2px; border-radius: 16px; border: 2px solid rgba(224,160,80,0.35); transform: translate(3px, -3px); }
+  .review-banner .info { flex: 1; position: relative; z-index: 1; }
+  .review-banner b { font-family: 'Reem Kufi'; font-size: 15.5px; font-weight: 600; display: block; margin-bottom: 3px; }
+  .review-banner p { font-size: 12.5px; opacity: 0.7; }
+  .review-banner .cta { background: var(--amber); color: var(--ink); padding: 10px 18px; border-radius: 12px; font-family: 'Reem Kufi'; font-weight: 600; font-size: 13px; border: 0; cursor: pointer; display: flex; align-items: center; gap: 6px; position: relative; z-index: 1; }
+
+  /* BALANCE */
+  .balance-card { background: var(--ink); color: var(--paper); border-radius: 24px; padding: 32px; position: relative; overflow: hidden; box-shadow: var(--shadow-lg); }
+  .balance-card::before { content: ""; position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(224,160,80,0.18), transparent 60%); pointer-events: none; }
+  .balance-card::after { content: ""; position: absolute; bottom: -50px; right: -100px; width: 350px; height: 350px; background: radial-gradient(circle, rgba(184,92,92,0.10), transparent 60%); pointer-events: none; }
+  .balance-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; position: relative; z-index: 1; }
+  .balance-meta { font-size: 12px; letter-spacing: 2px; opacity: 0.55; margin-bottom: 8px; }
+  .balance-amount { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 400; letter-spacing: -2px; line-height: 1; }
+  .balance-amount .currency { font-size: 24px; opacity: 0.6; margin-left: 8px; vertical-align: top; }
+  .balance-delta { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 6px 12px; background: rgba(107,142,107,0.18); color: #9CC09C; border-radius: 20px; font-size: 13px; font-family: 'Reem Kufi'; }
+  .balance-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; }
+  .stat-mini { background: rgba(244,239,230,0.05); border: 1px solid rgba(244,239,230,0.08); padding: 14px 16px; border-radius: 14px; }
+  .stat-mini .label { font-size: 11px; opacity: 0.55; letter-spacing: 1px; }
+  .stat-mini .value { font-family: 'Reem Kufi'; font-size: 22px; font-weight: 500; margin-top: 4px; }
+  .stat-mini .value.pos { color: #9CC09C; }
+  .stat-mini .value.neg { color: #E89595; }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .section-head h2 { font-family: 'Reem Kufi'; font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .section-head .lnk { font-size: 13px; color: var(--amber); cursor: pointer; }
+  .section-head .lnk:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+  /* PROJECTS */
+  .projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .project-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 20px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
+  .project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .project-card .head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .pill-icon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; font-size: 18px; }
+  .project-card.personal .pill-icon { background: rgba(200,133,58,0.15); color: var(--amber); }
+  .project-card.work .pill-icon { background: rgba(14,27,44,0.10); color: var(--ink); }
+  .project-card.freelance .pill-icon { background: rgba(107,142,107,0.18); color: var(--sage); }
+  .project-card .name { font-family: 'Reem Kufi'; font-weight: 600; font-size: 15px; }
+  .project-card .sub { font-size: 11px; opacity: 0.6; }
+  .project-card .amount { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 400; letter-spacing: -0.5px; }
+  .project-card .amount small { font-size: 13px; opacity: 0.5; margin-right: 4px; }
+  .progress { margin-top: 14px; height: 6px; background: var(--paper-3); border-radius: 4px; overflow: hidden; }
+  .progress > i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--amber-2), var(--amber)); }
+  .project-card.work .progress > i { background: linear-gradient(90deg, var(--ink-3), var(--ink)); }
+  .project-card.freelance .progress > i { background: linear-gradient(90deg, #8FB28F, var(--sage)); }
+  .project-card .meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; opacity: 0.65; font-family: 'Reem Kufi'; }
+  .project-card .pending { margin-top: 10px; padding: 6px 10px; background: rgba(200,133,58,0.10); border: 1px dashed rgba(200,133,58,0.35); border-radius: 8px; font-size: 11.5px; color: var(--amber); font-family: 'Reem Kufi'; display: flex; align-items: center; gap: 5px; }
+
+  /* CARDS / GENERIC */
+  .card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 22px; padding: 24px; }
+  .card .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .card .card-head h2 { font-family: 'Reem Kufi'; font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .card .card-head p { font-size: 12.5px; opacity: 0.6; margin-top: 2px; }
+
+  .forecast-tabs { display: flex; gap: 4px; background: var(--paper); padding: 4px; border-radius: 10px; border: 1px solid var(--line); }
+  .forecast-tabs button { border: 0; background: transparent; padding: 6px 14px; border-radius: 7px; cursor: pointer; font-family: 'Reem Kufi'; font-size: 12.5px; color: var(--ink); opacity: 0.55; }
+  .forecast-tabs button.active { background: var(--ink); color: var(--paper); opacity: 1; }
+  .chart-wrap { height: 240px; position: relative; }
+  .chart-wrap.tall { height: 320px; }
+  .forecast-legend { display: flex; gap: 18px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ALERTS */
+  .alerts { display: flex; flex-direction: column; gap: 10px; }
+  .alert { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 16px; border: 1px solid var(--line); background: var(--paper-2); position: relative; overflow: hidden; }
+  .alert::before { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 4px; }
+  .alert.danger::before { background: var(--rose); }
+  .alert.warn::before { background: var(--amber); }
+  .alert.info::before { background: var(--sage); }
+  .alert .icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex-shrink: 0; font-size: 17px; }
+  .alert.danger .icon { background: rgba(184,92,92,0.15); color: var(--rose); }
+  .alert.warn .icon { background: rgba(200,133,58,0.15); color: var(--amber); }
+  .alert.info .icon { background: rgba(107,142,107,0.18); color: var(--sage); }
+  .alert b { font-family: 'Reem Kufi'; font-size: 14.5px; display: block; margin-bottom: 4px; }
+  .alert p { font-size: 13px; opacity: 0.75; line-height: 1.6; }
+  .alert .when { font-size: 11px; opacity: 0.5; font-family: 'Reem Kufi'; margin-top: 6px; display: block; }
+  .alert .alert-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+  /* CHAT */
+  .chat { background: var(--paper-2); border-radius: 24px; border: 1px solid var(--line); position: sticky; top: 24px; height: calc(100vh - 48px); display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow); }
+  .chat-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; background: var(--paper); }
+  .ai-mark { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; position: relative; font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; }
+  .ai-mark::after { content: ""; position: absolute; bottom: 2px; left: 2px; width: 10px; height: 10px; background: var(--sage); border: 2px solid var(--paper); border-radius: 50%; }
+  .chat-head .info b { font-family: 'Reem Kufi'; font-size: 15px; display: block; }
+  .chat-head .info small { font-size: 11px; opacity: 0.55; }
+
+  .chat-body { flex: 1; overflow-y: auto; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .chat-body::-webkit-scrollbar { width: 6px; }
+  .chat-body::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  .day-divider { text-align: center; font-size: 11px; letter-spacing: 2px; opacity: 0.45; margin: 6px 0; font-family: 'Reem Kufi'; }
+  .msg { display: flex; flex-direction: column; max-width: 88%; }
+  .msg.me { align-self: flex-end; align-items: flex-end; }
+  .msg.ai { align-self: flex-start; align-items: flex-start; }
+  .bubble { padding: 11px 15px; border-radius: 18px; font-size: 14px; line-height: 1.7; }
+  .msg.me .bubble { background: var(--ink); color: var(--paper); border-bottom-right-radius: 6px; }
+  .msg.ai .bubble { background: var(--paper); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+  .msg .time { font-size: 10px; opacity: 0.45; margin-top: 4px; padding: 0 6px; font-family: 'Reem Kufi'; }
+
+  .ai-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-top: 4px; width: 100%; position: relative; }
+  .conf-ribbon { display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin: -14px -14px 12px; border-radius: 16px 16px 0 0; font-family: 'Reem Kufi'; font-size: 11.5px; font-weight: 500; border-bottom: 1px solid var(--line); }
+  .conf-ribbon.high { background: rgba(107,142,107,0.12); color: var(--sage); }
+  .conf-ribbon.med { background: rgba(200,133,58,0.12); color: var(--amber); }
+  .conf-ribbon.low { background: rgba(184,92,92,0.10); color: var(--rose); }
+  .conf-meter { display: flex; gap: 2px; margin-right: auto; }
+  .conf-meter i { width: 14px; height: 4px; background: currentColor; opacity: 0.25; border-radius: 1px; }
+  .conf-meter i.on { opacity: 1; }
+  .conf-text { font-weight: 600; }
+
+  .tx-receipt { display: flex; flex-direction: column; gap: 10px; }
+  .tx-row { display: flex; justify-content: space-between; align-items: center; }
+  .tx-row .k { font-size: 12px; opacity: 0.6; font-family: 'Reem Kufi'; }
+  .tx-row .v { font-size: 13.5px; font-family: 'Reem Kufi'; font-weight: 500; }
+  .tx-row .v.amount { font-family: 'Fraunces'; font-size: 18px; }
+  .tx-row .tag { background: rgba(200,133,58,0.15); color: var(--amber); padding: 3px 9px; border-radius: 8px; font-size: 11.5px; font-family: 'Reem Kufi'; font-weight: 600; }
+  .tx-row .tag.work { background: rgba(14,27,44,0.10); color: var(--ink); }
+  .tx-row .tag.freelance { background: rgba(107,142,107,0.18); color: var(--sage); }
+  .tx-row .tag.dim { background: var(--paper-2); color: rgba(14,27,44,0.5); border: 1px dashed var(--line-strong); }
+  .tx-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+  .chip { border: 1px solid var(--line-strong); background: transparent; padding: 6px 12px; border-radius: 10px; cursor: pointer; font-family: 'Reem Kufi'; font-size: 12px; color: var(--ink); display: inline-flex; align-items: center; gap: 5px; }
+  .chip:hover { background: var(--paper-3); }
+  .chip.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .chip.amber { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+  .chip.ghost { border: 1px dashed var(--line-strong); }
+
+  .silent-confirm { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--line); border-right: 3px solid var(--sage); border-radius: 12px; padding: 10px 14px; font-size: 13px; }
+  .silent-confirm .ok { color: var(--sage); font-size: 16px; }
+  .silent-confirm .body { flex: 1; }
+  .silent-confirm .body b { font-family: 'Reem Kufi'; font-weight: 600; }
+  .silent-confirm .undo { font-size: 11.5px; color: rgba(14,27,44,0.5); cursor: pointer; font-family: 'Reem Kufi'; }
+  .silent-confirm .undo:hover { color: var(--ink); text-decoration: underline; }
+
+  .suggestions { display: flex; gap: 8px; padding: 0 20px 12px; overflow-x: auto; }
+  .suggestions::-webkit-scrollbar { display: none; }
+  .sug { flex-shrink: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px; font-family: 'Reem Kufi'; font-size: 12.5px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+  .sug:hover { background: var(--paper-3); border-color: var(--line-strong); }
+
+  .composer { border-top: 1px solid var(--line); padding: 14px 18px 16px; background: var(--paper); }
+  .composer-row { display: flex; align-items: center; gap: 8px; background: var(--paper-2); padding: 6px 6px 6px 14px; border-radius: 16px; border: 1px solid var(--line); }
+  .composer-row:focus-within { border-color: var(--ink); }
+  .composer-row input { flex: 1; border: 0; background: transparent; outline: none; font-family: inherit; font-size: 14px; padding: 8px 0; color: var(--ink); }
+  .composer-row input::placeholder { color: rgba(14,27,44,0.4); }
+  .mic-btn { width: 40px; height: 40px; border-radius: 12px; background: var(--ink); color: var(--paper); border: 0; cursor: pointer; display: grid; place-items: center; transition: transform 0.15s; }
+  .mic-btn:hover { transform: scale(1.05); }
+  .mic-btn.rec { background: var(--rose); animation: pulseMic 1.2s ease-in-out infinite; }
+  @keyframes pulseMic { 0%,100% { box-shadow: 0 0 0 0 rgba(184,92,92,0.5); } 50% { box-shadow: 0 0 0 10px rgba(184,92,92,0); } }
+  .send-btn { width: 40px; height: 40px; border-radius: 12px; background: var(--amber); color: var(--ink); border: 0; cursor: pointer; display: grid; place-items: center; }
+  .send-btn:hover { background: var(--amber-2); }
+  .composer .small-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .composer .small-actions button { border: 1px solid var(--line); background: transparent; padding: 5px 10px; border-radius: 9px; font-family: 'Reem Kufi'; font-size: 11.5px; cursor: pointer; color: var(--ink); opacity: 0.7; display: inline-flex; align-items: center; gap: 5px; }
+  .composer .small-actions button:hover { background: var(--paper-2); opacity: 1; }
+
+  /* ============================== */
+  /* TRANSACTIONS PAGE */
+  /* ============================== */
+  .tx-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tx-filter { padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper-2); cursor: pointer; font-family: 'Reem Kufi'; font-size: 12.5px; }
+  .tx-filter.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .tx-table { background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+  .tx-day { padding: 14px 20px; background: var(--paper); border-bottom: 1px solid var(--line); font-family: 'Reem Kufi'; font-size: 12px; letter-spacing: 1px; opacity: 0.65; display: flex; justify-content: space-between; }
+  .tx-day b { font-weight: 500; }
+  .tx-item { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 14px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.15s; }
+  .tx-item:hover { background: var(--paper); }
+  .tx-item:last-child { border-bottom: 0; }
+  .tx-item .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--paper-3); display: grid; place-items: center; font-size: 20px; flex-shrink: 0; }
+  .tx-item .desc { min-width: 0; }
+  .tx-item .desc b { font-family: 'Reem Kufi'; font-size: 14px; font-weight: 500; display: block; }
+  .tx-item .desc small { font-size: 11.5px; opacity: 0.6; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+  .tx-tag { padding: 2px 8px; border-radius: 6px; font-size: 10.5px; font-family: 'Reem Kufi'; font-weight: 600; }
+  .tx-tag.personal { background: rgba(200,133,58,0.15); color: var(--amber); }
+  .tx-tag.work { background: rgba(14,27,44,0.10); color: var(--ink); }
+  .tx-tag.freelance { background: rgba(107,142,107,0.18); color: var(--sage); }
+  .tx-tag.unc { background: var(--paper-2); color: rgba(14,27,44,0.55); border: 1px dashed var(--line-strong); }
+  .tx-item .conf-mini { display: flex; gap: 1.5px; }
+  .tx-item .conf-mini i { width: 8px; height: 3px; background: var(--ink); opacity: 0.2; border-radius: 1px; }
+  .tx-item .conf-mini i.on { opacity: 0.7; }
+  .tx-item .conf-mini.high i.on { background: var(--sage); opacity: 1; }
+  .tx-item .conf-mini.med i.on { background: var(--amber); opacity: 1; }
+  .tx-item .conf-mini.low i.on { background: var(--rose); opacity: 1; }
+  .tx-item .amt { font-family: 'Fraunces'; font-size: 18px; font-weight: 500; flex-shrink: 0; min-width: 90px; text-align: left; }
+  .tx-item .amt.income { color: var(--sage); }
+
+  /* ANALYTICS */
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .analytics-grid .card { padding: 22px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .big-stat { background: var(--paper-2); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .big-stat .l { font-size: 11.5px; opacity: 0.6; letter-spacing: 1px; font-family: 'Reem Kufi'; }
+  .big-stat .v { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 400; margin-top: 6px; letter-spacing: -0.5px; }
+  .big-stat .d { font-size: 11.5px; margin-top: 4px; font-family: 'Reem Kufi'; }
+  .big-stat .d.up { color: var(--sage); }
+  .big-stat .d.down { color: var(--rose); }
+
+  .cat-list { display: flex; flex-direction: column; gap: 12px; }
+  .cat-row { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; }
+  .cat-row .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--paper); display: grid; place-items: center; font-size: 16px; }
+  .cat-row .info { min-width: 0; }
+  .cat-row .info b { font-family: 'Reem Kufi'; font-size: 13.5px; font-weight: 500; display: block; }
+  .cat-row .bar { height: 5px; background: var(--paper-3); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .cat-row .bar i { display: block; height: 100%; background: var(--amber); border-radius: 3px; }
+  .cat-row .amt { font-family: 'Fraunces'; font-size: 16px; }
+
+  /* DEBTS */
+  .debt-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 22px; position: relative; overflow: hidden; }
+  .debt-card.urgent { border-color: rgba(184,92,92,0.4); background: linear-gradient(135deg, rgba(184,92,92,0.06), var(--paper-2)); }
+  .debt-card .debt-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .debt-card .debt-icon { width: 46px; height: 46px; border-radius: 13px; background: rgba(14,27,44,0.08); display: grid; place-items: center; font-size: 22px; flex-shrink: 0; }
+  .debt-card.urgent .debt-icon { background: rgba(184,92,92,0.15); color: var(--rose); }
+  .debt-card .debt-name { font-family: 'Reem Kufi'; font-size: 15px; font-weight: 600; }
+  .debt-card .debt-meta { font-size: 11.5px; opacity: 0.6; margin-top: 2px; }
+  .debt-amount { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400; letter-spacing: -0.5px; line-height: 1; }
+  .debt-amount small { font-size: 14px; opacity: 0.5; }
+  .debt-progress { margin-top: 16px; }
+  .debt-progress .label-row { display: flex; justify-content: space-between; font-size: 11.5px; opacity: 0.7; margin-bottom: 6px; font-family: 'Reem Kufi'; }
+  .debt-progress .bar { height: 8px; background: var(--paper-3); border-radius: 4px; overflow: hidden; }
+  .debt-progress .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--sage), #8FB28F); border-radius: 4px; }
+  .debt-card.urgent .debt-progress .bar i { background: linear-gradient(90deg, var(--rose), #D88B8B); }
+  .debt-card .debt-due { margin-top: 14px; padding: 10px 14px; background: var(--paper); border-radius: 10px; font-size: 12px; display: flex; align-items: center; gap: 8px; font-family: 'Reem Kufi'; }
+  .debt-card.urgent .debt-due { background: rgba(184,92,92,0.08); color: var(--rose); }
+  .debt-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+  /* PROJECT DETAIL */
+  .project-detail-hero { background: var(--ink); color: var(--paper); border-radius: 24px; padding: 30px; position: relative; overflow: hidden; }
+  .project-detail-hero::before { content: ""; position: absolute; top: -80px; left: -80px; width: 320px; height: 320px; background: radial-gradient(circle, rgba(224,160,80,0.20), transparent 60%); }
+  .project-detail-hero .label { font-size: 11px; letter-spacing: 2px; opacity: 0.55; margin-bottom: 6px; }
+  .project-detail-hero h2 { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400; letter-spacing: -0.5px; }
+  .project-detail-hero .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; position: relative; z-index: 1; }
+
+  /* REVIEW PAGE */
+  .review-card-big { background: var(--paper-2); border: 1px solid var(--line); border-radius: 22px; padding: 24px; }
+  .review-merchant { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .review-merchant .ic { width: 56px; height: 56px; border-radius: 16px; background: var(--paper-3); display: grid; place-items: center; font-size: 26px; }
+  .review-merchant b { font-family: 'Reem Kufi'; font-weight: 600; font-size: 17px; display: block; }
+  .review-merchant small { font-size: 12px; opacity: 0.6; }
+  .review-amount { font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400; letter-spacing: -1px; }
+  .review-amount small { font-size: 16px; opacity: 0.5; margin-right: 6px; }
+  .review-context { padding: 14px 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; font-size: 13px; line-height: 1.7; margin: 16px 0; }
+  .review-context b { color: var(--amber); font-family: 'Reem Kufi'; }
+  .review-suggestion { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(200,133,58,0.10); border: 1px dashed rgba(200,133,58,0.4); border-radius: 12px; font-size: 13px; font-family: 'Reem Kufi'; margin-bottom: 16px; }
+  .review-choices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .review-choice { padding: 14px; border-radius: 14px; border: 1.5px solid var(--line-strong); background: var(--paper); cursor: pointer; font-family: 'Reem Kufi'; font-weight: 500; font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.15s; color: var(--ink); }
+  .review-choice .em { font-size: 22px; }
+  .review-choice:hover { background: var(--paper-3); transform: translateY(-1px); }
+  .review-choice.suggested { background: var(--amber); color: var(--ink); border-color: var(--amber); }
+  .review-progress-pips { display: flex; gap: 5px; margin-bottom: 18px; }
+  .review-progress-pips i { flex: 1; height: 5px; border-radius: 3px; background: var(--paper-3); }
+  .review-progress-pips i.done { background: var(--sage); }
+  .review-progress-pips i.active { background: var(--ink); }
+
+  /* ALERTS PAGE */
+  .alert-tabs { display: flex; gap: 4px; background: var(--paper-2); padding: 4px; border-radius: 12px; border: 1px solid var(--line); width: fit-content; }
+  .alert-tabs button { border: 0; background: transparent; padding: 8px 16px; border-radius: 9px; cursor: pointer; font-family: 'Reem Kufi'; font-size: 12.5px; color: var(--ink); opacity: 0.6; }
+  .alert-tabs button.active { background: var(--ink); color: var(--paper); opacity: 1; }
+  .alert-tabs button .count { background: rgba(244,239,230,0.2); padding: 1px 6px; border-radius: 6px; font-size: 10.5px; margin-right: 5px; }
+  .alert-tabs button:not(.active) .count { background: var(--paper-3); }
+
+  /* GOALS / FORECAST */
+  .goal-card { background: var(--paper-2); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .goal-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .goal-icon { width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center; font-size: 22px; }
+  .goal-icon.travel { background: rgba(107,142,107,0.18); color: var(--sage); }
+  .goal-icon.tech { background: rgba(200,133,58,0.15); color: var(--amber); }
+  .goal-icon.emergency { background: rgba(14,27,44,0.10); color: var(--ink); }
+  .goal-name { font-family: 'Reem Kufi'; font-size: 16px; font-weight: 600; display: block; }
+  .goal-meta { font-size: 12px; opacity: 0.6; }
+  .goal-progress-ring { position: relative; }
+  .goal-progress-text { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .goal-progress-text .now { font-family: 'Fraunces'; font-size: 26px; }
+  .goal-progress-text .target { font-size: 13px; opacity: 0.55; }
+  .goal-bar { height: 10px; background: var(--paper-3); border-radius: 5px; overflow: hidden; }
+  .goal-bar i { display: block; height: 100%; border-radius: 5px; transition: width 0.6s; }
+  .goal-bar.travel i { background: linear-gradient(90deg, #8FB28F, var(--sage)); }
+  .goal-bar.tech i { background: linear-gradient(90deg, var(--amber-2), var(--amber)); }
+  .goal-bar.emergency i { background: linear-gradient(90deg, var(--ink-3), var(--ink)); }
+  .goal-summary { display: flex; justify-content: space-between; margin-top: 12px; font-size: 11.5px; font-family: 'Reem Kufi'; opacity: 0.7; }
+
+  /* MODALS */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(14,27,44,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 24px; }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.25s ease-out; }
+  .modal { background: var(--paper); border-radius: 28px; width: 100%; max-width: 540px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.3); position: relative; }
+  .modal-head { padding: 22px 26px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+  .modal-head h3 { font-family: 'Reem Kufi'; font-size: 19px; font-weight: 600; }
+  .modal-head p { font-size: 12.5px; opacity: 0.6; margin-top: 2px; }
+  .modal-close { width: 34px; height: 34px; border-radius: 10px; background: var(--paper-2); border: 0; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+  .modal-close:hover { background: var(--paper-3); }
+  .modal-body { padding: 22px 26px; overflow-y: auto; flex: 1; }
+  .modal-foot { padding: 16px 26px; border-top: 1px solid var(--line); background: var(--paper-2); display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+
+  .tx-detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .tx-detail-row:last-child { border-bottom: 0; }
+  .tx-detail-row .k { opacity: 0.6; font-family: 'Reem Kufi'; }
+  .tx-detail-row .v { font-family: 'Reem Kufi'; font-weight: 500; }
+
+  /* SETTINGS / FORMS */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-family: 'Reem Kufi'; font-size: 12.5px; opacity: 0.7; margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); font-family: 'Noto Naskh Arabic'; font-size: 14px; color: var(--ink); outline: none; }
+  .form-input:focus { border-color: var(--ink); }
+
+  @media (max-width: 1280px) { .app { grid-template-columns: 240px 1fr 360px; } }
+  @media (max-width: 1024px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar, .chat { position: relative; height: auto; top: 0; }
+    .chat { height: 600px; }
+    .balance-row, .analytics-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .app { padding: 12px; gap: 12px; }
+    .balance-amount { font-size: 40px; }
+    .projects { grid-template-columns: 1fr; }
+    .topbar .search { display: none; }
+    .review-banner { flex-direction: column; align-items: stretch; text-align: center; }
+    .stat-grid { grid-template-columns: 1fr; }
+    .review-choices { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============= SIDEBAR ============= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">م</div>
+      <div class="brand-text">
+        <h1>ماليّ</h1>
+        <span>SMART FINANCE</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="mainNav">
+      <div class="nav-label">القائمة الرئيسية</div>
+      <div class="nav-item active" data-page="dashboard">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
+        لوحة التحكم
+      </div>
+      <div class="nav-item" data-page="transactions">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM3 10h18"/></svg>
+        المعاملات
+      </div>
+      <div class="nav-item" data-page="review">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        تنتظر تصنيفك
+        <span class="badge pulse">4</span>
+      </div>
+      <div class="nav-item" data-page="analytics">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 14l4-4 4 4 5-5"/></svg>
+        التحليلات
+      </div>
+      <div class="nav-item" data-page="forecast">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.07-7.07l-2.83 2.83M9.76 14.24l-2.83 2.83m0-12.14l2.83 2.83m4.48 4.48l2.83 2.83"/></svg>
+        التنبؤات
+      </div>
+      <div class="nav-item" data-page="debts">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 11h14l-1 10H6z"/></svg>
+        الديون
+        <span class="badge">3</span>
+      </div>
+      <div class="nav-item" data-page="alerts">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A7 7 0 0 1 17 11V8A5 5 0 0 0 7 8v3a7 7 0 0 1-1.6 4.6L4 17h5m6 0a3 3 0 0 1-6 0"/></svg>
+        التنبيهات
+      </div>
+
+      <div class="nav-label">المشاريع</div>
+      <div class="nav-item" data-page="project-personal">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>
+        شخصي
+      </div>
+      <div class="nav-item" data-page="project-work">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        عمل
+      </div>
+      <div class="nav-item" data-page="project-freelance">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        فريلانس
+      </div>
+
+      <div class="nav-label">إعدادات</div>
+      <div class="nav-item" data-page="settings">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+        الإعدادات
+      </div>
+    </nav>
+
+    <div class="learn-card">
+      <div class="head">
+        <span class="pulse-dot"></span>
+        <span class="label">يتعلم منكِ</span>
+      </div>
+      <div class="value">87%</div>
+      <div class="sub">دقة التصنيف التلقائي</div>
+      <div class="learn-bar"><i></i></div>
+      <div class="sub" style="margin-top:8px; font-size:10.5px;">+3% هذا الأسبوع</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">س</div>
+        <div class="info"><b>سارة المنصور</b><small>الباقة الذهبية</small></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============= MAIN ============= -->
+  <main class="main">
+
+    <div class="topbar">
+      <div class="greeting" id="greetingEl">مساء الخير، <b>سارة</b> 🌙</div>
+      <div class="search">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="opacity:0.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input placeholder="ابحث في معاملاتك..." />
+      </div>
+      <div class="icon-btn" title="الإشعارات" data-nav="alerts">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 17h5l-1.4-1.4A7 7 0 0 1 17 11V8A5 5 0 0 0 7 8v3a7 7 0 0 1-1.6 4.6L4 17h5m6 0a3 3 0 0 1-6 0"/></svg>
+        <span class="dot"></span>
+      </div>
+      <div class="icon-btn" title="الإعدادات" data-nav="settings">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 0 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 0 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 0 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: DASHBOARD -->
+    <!-- =========================================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="review-banner" data-nav="review">
+        <div class="pile">۴</div>
+        <div class="info">
+          <b>‎4 معاملات تنتظر تصنيفك السريع</b>
+          <p>صنّفنا معظم معاملاتك تلقائيًا اليوم — هذي اللي ما قدرنا نحسمها. تصنيفها يستغرق ‎30 ثانية فقط.</p>
+        </div>
+        <button class="cta">ابدأ المراجعة
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+      </div>
+
+      <section class="balance-card">
+        <div class="balance-row">
+          <div>
+            <div class="balance-meta">صافي الرصيد لهذا الشهر</div>
+            <div class="balance-amount">12,847<span class="currency">ر.س</span></div>
+            <div class="balance-delta">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M7 17l5-5 5 5M7 7h10v10"/></svg>
+              ‎+8.4٪ مقارنة بالشهر الماضي
+            </div>
+          </div>
+          <div class="balance-stats">
+            <div class="stat-mini"><div class="label">الدخل</div><div class="value pos">‎+24,500</div></div>
+            <div class="stat-mini"><div class="label">المصاريف</div><div class="value neg">‎−11,653</div></div>
+            <div class="stat-mini"><div class="label">ادخار</div><div class="value">3,200</div></div>
+            <div class="stat-mini"><div class="label">معلّق</div><div class="value" style="color:var(--amber-soft)">‎4 معاملات</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>المشاريع</h2>
+          <span class="lnk" data-nav="analytics">عرض التحليل ←</span>
+        </div>
+        <div class="projects">
+          <div class="project-card personal" data-nav="project-personal">
+            <div class="head">
+              <div class="pill-icon">◐</div>
+              <div><div class="name">شخصي</div><div class="sub">42 معاملة هذا الشهر</div></div>
+            </div>
+            <div class="amount"><small>ر.س</small>5,820</div>
+            <div class="progress"><i style="width: 68%"></i></div>
+            <div class="meta"><span>‎68٪ من الميزانية</span><span>الباقي 2,680</span></div>
+          </div>
+          <div class="project-card work" data-nav="project-work">
+            <div class="head">
+              <div class="pill-icon">◧</div>
+              <div><div class="name">عمل</div><div class="sub">18 معاملة هذا الشهر</div></div>
+            </div>
+            <div class="amount"><small>ر.س</small>3,140</div>
+            <div class="progress"><i style="width: 41%"></i></div>
+            <div class="meta"><span>‎41٪ من الميزانية</span><span>الباقي 4,560</span></div>
+            <div class="pending">
+              <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              ‎+312 ر.س قيد المراجعة
+            </div>
+          </div>
+          <div class="project-card freelance" data-nav="project-freelance">
+            <div class="head">
+              <div class="pill-icon">◨</div>
+              <div><div class="name">فريلانس</div><div class="sub">9 معاملات هذا الشهر</div></div>
+            </div>
+            <div class="amount"><small>ر.س</small>2,693</div>
+            <div class="progress"><i style="width: 89%"></i></div>
+            <div class="meta"><span>‎89٪ من الميزانية</span><span>الباقي 327</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>التدفق النقدي المتوقع</h2>
+            <p>توقع ذكي بناءً على نمط معاملاتك السابقة</p>
+          </div>
+          <div class="forecast-tabs">
+            <button>‎7 أيام</button>
+            <button class="active">‎30 يوم</button>
+            <button>‎90 يوم</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="dashChart"></canvas></div>
+        <div class="forecast-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--ink)"></span>الرصيد الفعلي</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>التوقع الذكي</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--rose)"></span>منطقة الخطر</div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>التنبيهات الذكية</h2>
+          <span class="lnk" data-nav="alerts">عرض الكل ←</span>
+        </div>
+        <div class="alerts">
+          <div class="alert info">
+            <div class="icon">✓</div>
+            <div style="flex:1">
+              <b>صنّفت ‎23 معاملة تلقائيًا اليوم</b>
+              <p>‎19 معاملة بثقة عالية (≥‎90٪) خُصمت مباشرة من ميزانياتها. ‎4 منها تحتاج مراجعتك السريعة.</p>
+              <span class="when">قبل قليل · ‎9:42 م</span>
+            </div>
+          </div>
+          <div class="alert danger">
+            <div class="icon">⚠</div>
+            <div style="flex:1">
+              <b>خطر ماليّ متوقع خلال ‎12 يوم</b>
+              <p>قد ينخفض رصيدك تحت ‎1,000 ر.س قبل ‎9 مايو. أنصح بتأجيل ‎2 من اشتراكاتك أو تقليل مصاريف "مطاعم".</p>
+              <span class="when">منذ ‎15 دقيقة</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: TRANSACTIONS -->
+    <!-- =========================================== -->
+    <div class="page" id="page-transactions">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>المعاملات</h1>
+          <p>كل حركة مالية، مصنّفة ومرتّبة</p>
+        </div>
+        <div class="actions">
+          <button class="btn">📤 تصدير</button>
+          <button class="btn primary">+ معاملة جديدة</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 18px;">
+        <div class="tx-filters">
+          <button class="tx-filter active">الكل · 134</button>
+          <button class="tx-filter">شخصي · 42</button>
+          <button class="tx-filter">عمل · 18</button>
+          <button class="tx-filter">فريلانس · 9</button>
+          <button class="tx-filter">دخل</button>
+          <button class="tx-filter" style="color: var(--rose); border-color: rgba(184,92,92,0.3);">غير مصنّفة · 4</button>
+        </div>
+      </div>
+
+      <div class="tx-table">
+        <div class="tx-day">
+          <span><b>اليوم</b> · ‎27 إبريل</span>
+          <span>‎720 ر.س · ‎6 معاملات</span>
+        </div>
+        <div class="tx-item" data-tx="t1">
+          <div class="ic">☕</div>
+          <div class="desc">
+            <b>كافيه أوريغانو</b>
+            <small>‎9:15 ص · <span class="tx-tag work">عمل</span> · مع فريق التصميم</small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−87.00</div>
+        </div>
+        <div class="tx-item" data-tx="t2">
+          <div class="ic">📚</div>
+          <div class="desc">
+            <b>مكتبة جرير</b>
+            <small>‎11:32 ص · <span class="tx-tag work">عمل</span> · بحاجة تأكيد</small>
+          </div>
+          <div class="conf-mini med"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+          <div class="amt">‎−145.00</div>
+        </div>
+        <div class="tx-item" data-tx="t3">
+          <div class="ic">🛒</div>
+          <div class="desc">
+            <b>نون · طلب</b>
+            <small>‎4:12 م · <span class="tx-tag unc">غير مصنّف</span></small>
+          </div>
+          <div class="conf-mini low"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <div class="amt">‎−340.00</div>
+        </div>
+        <div class="tx-item" data-tx="t4">
+          <div class="ic">🚗</div>
+          <div class="desc">
+            <b>كريم · رحلتين</b>
+            <small>‎5:30 م · <span class="tx-tag personal">شخصي</span></small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−68.00</div>
+        </div>
+        <div class="tx-item" data-tx="t5">
+          <div class="ic">💧</div>
+          <div class="desc">
+            <b>فاتورة المياه</b>
+            <small>‎6:00 م · <span class="tx-tag personal">شخصي</span></small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−92.00</div>
+        </div>
+
+        <div class="tx-day">
+          <span><b>أمس</b> · ‎26 إبريل</span>
+          <span>‎4,150 ر.س · ‎8 معاملات</span>
+        </div>
+        <div class="tx-item">
+          <div class="ic">💼</div>
+          <div class="desc">
+            <b>راتب · شركة الواحة</b>
+            <small>‎9:00 ص · <span class="tx-tag personal">دخل ثابت</span></small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt income">‎+18,500</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">⛽</div>
+          <div class="desc">
+            <b>محطة شل</b>
+            <small>‎7:45 ص · <span class="tx-tag unc">غير مصنّف</span></small>
+          </div>
+          <div class="conf-mini low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+          <div class="amt">‎−120.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">📱</div>
+          <div class="desc">
+            <b>اشتراك Adobe Creative</b>
+            <small>‎12:00 م · <span class="tx-tag unc">غير مصنّف</span></small>
+          </div>
+          <div class="conf-mini low"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+          <div class="amt">‎−230.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🍽️</div>
+          <div class="desc">
+            <b>مطعم نَجد</b>
+            <small>‎8:30 م · <span class="tx-tag personal">شخصي</span> · عشاء عائلي</small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−267.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">💳</div>
+          <div class="desc">
+            <b>مشروع مصمّم — دفعة</b>
+            <small>‎3:14 م · <span class="tx-tag freelance">فريلانس</span></small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt income">‎+3,500</div>
+        </div>
+
+        <div class="tx-day">
+          <span><b>‎25 إبريل</b></span>
+          <span>‎890 ر.س · ‎4 معاملات</span>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🏪</div>
+          <div class="desc">
+            <b>قرطاسية للمشروع</b>
+            <small>‎10:22 ص · <span class="tx-tag freelance">فريلانس</span></small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−180.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🎁</div>
+          <div class="desc">
+            <b>متجر هدايا الأندلس</b>
+            <small>‎6:18 م · <span class="tx-tag unc">غير مصنّف</span></small>
+          </div>
+          <div class="conf-mini low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+          <div class="amt">‎−85.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🚕</div>
+          <div class="desc">
+            <b>أوبر · مطار</b>
+            <small>‎4:30 ص · <span class="tx-tag work">عمل</span> · سفر للاجتماع</small>
+          </div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          <div class="amt">‎−145.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: REVIEW -->
+    <!-- =========================================== -->
+    <div class="page" id="page-review">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>تنتظر تصنيفك</h1>
+          <p>‎4 معاملات لم نستطع تصنيفها بثقة كافية — مساعدتك تجعل النظام أذكى</p>
+        </div>
+        <div class="actions">
+          <button class="btn">⏱ راجع لاحقًا</button>
+          <button class="btn amber">⚡ تصنيف ذكي للكل</button>
+        </div>
+      </div>
+
+      <div class="review-progress-pips">
+        <i class="active"></i><i></i><i></i><i></i>
+      </div>
+
+      <div class="review-card-big">
+        <div class="review-merchant">
+          <div class="ic">🛒</div>
+          <div>
+            <b>نون · عملية شراء</b>
+            <small>اليوم، ‎4:12 م · بطاقة الراجحي ⋯ ‎4521</small>
+          </div>
+        </div>
+
+        <div class="review-amount"><small>ر.س</small>340.00</div>
+
+        <div class="review-context">
+          🔍 <b>السياق:</b> آخر ‎3 طلبات نون كانت لطفلكِ (شخصي)، لكن أحيانًا تشترين أدوات مكتبية للعمل من نفس المنصّة. الطلب اليوم كان في وقت العمل، مما زاد الحيرة.
+        </div>
+
+        <div class="review-suggestion">
+          <span style="color:var(--amber); font-size:16px;">💡</span>
+          <div>
+            <b>اقتراحي:</b> صنّفيها "شخصي" — احتمالية ‎60٪
+            <div style="opacity:0.7; font-size:11px; margin-top:2px;">لكن مو متأكد، لذلك أسألكِ</div>
+          </div>
+        </div>
+
+        <div class="review-choices">
+          <button class="review-choice suggested">
+            <span class="em">◐</span>شخصي
+          </button>
+          <button class="review-choice">
+            <span class="em">◧</span>عمل
+          </button>
+          <button class="review-choice">
+            <span class="em">◨</span>فريلانس
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line);">
+          <button class="btn" style="flex: 1;">تخطّي الآن</button>
+          <button class="btn amber">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            تطبيق على كل طلبات نون
+          </button>
+        </div>
+      </div>
+
+      <section>
+        <div class="section-head">
+          <h2 style="font-size:16px;">المعاملات القادمة</h2>
+          <span style="font-size:12px; opacity:0.6; font-family:'Reem Kufi'">‎3 متبقية</span>
+        </div>
+        <div class="tx-table">
+          <div class="tx-item">
+            <div class="ic">⛽</div>
+            <div class="desc">
+              <b>محطة وقود · شل</b>
+              <small>أمس، ‎7:45 ص · لم نتمكن من تحديد المشروع</small>
+            </div>
+            <div class="conf-mini low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+            <div class="amt">‎−120.00</div>
+          </div>
+          <div class="tx-item">
+            <div class="ic">📱</div>
+            <div class="desc">
+              <b>اشتراك Adobe Creative</b>
+              <small>أمس · معاملة جديدة، نحتاج تصنيفها</small>
+            </div>
+            <div class="conf-mini low"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+            <div class="amt">‎−230.00</div>
+          </div>
+          <div class="tx-item">
+            <div class="ic">🎁</div>
+            <div class="desc">
+              <b>متجر هدايا · الأندلس</b>
+              <small>قبل ‎3 أيام · سياق غير واضح</small>
+            </div>
+            <div class="conf-mini low"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div>
+            <div class="amt">‎−85.00</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="card" style="background: linear-gradient(135deg, rgba(107,142,107,0.08), rgba(107,142,107,0.02)); border-color: rgba(107,142,107,0.3);">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--sage); color: var(--paper); display: grid; place-items: center; font-size: 22px;">●</div>
+          <div style="flex: 1;">
+            <b style="font-family:'Reem Kufi'; font-size: 14px;">أتعلّم من اختياراتكِ</b>
+            <p style="font-size: 12.5px; opacity: 0.75; margin-top: 4px;">كل تصنيف تأكدينه يحسّن دقة المرات القادمة. وصلنا اليوم إلى ‎87٪ دقة في التصنيف التلقائي — ‎+3٪ هذا الأسبوع.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: ANALYTICS -->
+    <!-- =========================================== -->
+    <div class="page" id="page-analytics">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>التحليلات</h1>
+          <p>تعمّقي في أنماط إنفاقكِ ودخلكِ</p>
+        </div>
+        <div class="actions">
+          <button class="btn">📅 إبريل ‎2026</button>
+          <button class="btn primary">📊 تقرير شامل</button>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="big-stat">
+          <div class="l">إجمالي الدخل</div>
+          <div class="v" style="color:var(--sage)">24,500</div>
+          <div class="d up">↑ ‎12٪ عن الشهر الماضي</div>
+        </div>
+        <div class="big-stat">
+          <div class="l">إجمالي المصاريف</div>
+          <div class="v" style="color:var(--rose)">11,653</div>
+          <div class="d down">↑ ‎4.2٪ عن الشهر الماضي</div>
+        </div>
+        <div class="big-stat">
+          <div class="l">معدّل اليومي</div>
+          <div class="v">432</div>
+          <div class="d">‎ر.س / يوم</div>
+        </div>
+        <div class="big-stat">
+          <div class="l">نسبة الادخار</div>
+          <div class="v">52%</div>
+          <div class="d up">↑ ممتاز</div>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-head"><h2>الإنفاق حسب الفئة</h2></div>
+          <div class="cat-list">
+            <div class="cat-row">
+              <div class="ic">🍽️</div>
+              <div class="info">
+                <b>مطاعم وطعام</b>
+                <div class="bar"><i style="width: 78%; background:var(--amber);"></i></div>
+              </div>
+              <div class="amt">3,240</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">🛒</div>
+              <div class="info">
+                <b>تسوق</b>
+                <div class="bar"><i style="width: 62%; background:var(--rose);"></i></div>
+              </div>
+              <div class="amt">2,580</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">⛽</div>
+              <div class="info">
+                <b>مواصلات ووقود</b>
+                <div class="bar"><i style="width: 45%; background:var(--ink);"></i></div>
+              </div>
+              <div class="amt">1,890</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">📱</div>
+              <div class="info">
+                <b>اشتراكات</b>
+                <div class="bar"><i style="width: 38%; background:var(--sage);"></i></div>
+              </div>
+              <div class="amt">1,580</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">💡</div>
+              <div class="info">
+                <b>فواتير</b>
+                <div class="bar"><i style="width: 30%; background:#9c7ab8;"></i></div>
+              </div>
+              <div class="amt">1,265</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">🎯</div>
+              <div class="info">
+                <b>أخرى</b>
+                <div class="bar"><i style="width: 26%; background:#c9a97a;"></i></div>
+              </div>
+              <div class="amt">1,098</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>توزيع المشاريع</h2></div>
+          <div class="chart-wrap" style="height: 240px;"><canvas id="projChart"></canvas></div>
+          <div class="forecast-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>شخصي · ‎50٪</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--ink)"></span>عمل · ‎27٪</div>
+            <div class="legend-item"><span class="legend-dot" style="background:var(--sage)"></span>فريلانس · ‎23٪</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>الإنفاق اليومي · إبريل ‎2026</h2>
+            <p>أعلى يوم: ‎12 إبريل (‎1,240 ر.س) · أقل يوم: ‎3 إبريل (‎45 ر.س)</p>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="spendChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: FORECAST -->
+    <!-- =========================================== -->
+    <div class="page" id="page-forecast">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>التنبؤات</h1>
+          <p>ماذا سيحدث ماليًا في الأيام القادمة؟</p>
+        </div>
+      </div>
+
+      <section class="card" style="background: linear-gradient(135deg, var(--ink), var(--ink-2)); color: var(--paper); border-color: var(--ink);">
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 11px; letter-spacing: 2px; opacity: 0.55; margin-bottom: 8px;">تنبؤ ‎30 يوم</div>
+          <h2 style="font-family:'Fraunces'; font-weight: 400; font-size: 36px; letter-spacing:-0.5px;">رصيدك المتوقع نهاية الشهر</h2>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px;">
+            <div style="padding: 16px; background: rgba(244,239,230,0.05); border: 1px solid rgba(244,239,230,0.10); border-radius: 14px;">
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">الأقل احتمالًا</div>
+              <div style="font-family:'Fraunces'; font-size: 24px; margin-top: 4px; color: #E89595;">2,140</div>
+              <div style="font-size: 11px; opacity: 0.55; margin-top: 2px;">‎ر.س · ‎15٪ احتمال</div>
+            </div>
+            <div style="padding: 16px; background: rgba(224,160,80,0.10); border: 1px solid rgba(224,160,80,0.30); border-radius: 14px;">
+              <div style="font-size: 11px; opacity: 0.7; letter-spacing: 1px; color: var(--amber-soft)">الأكثر احتمالًا</div>
+              <div style="font-family:'Fraunces'; font-size: 24px; margin-top: 4px; color: var(--amber-soft)">8,420</div>
+              <div style="font-size: 11px; opacity: 0.55; margin-top: 2px;">‎ر.س · ‎70٪ احتمال</div>
+            </div>
+            <div style="padding: 16px; background: rgba(244,239,230,0.05); border: 1px solid rgba(244,239,230,0.10); border-radius: 14px;">
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">الأعلى احتمالًا</div>
+              <div style="font-family:'Fraunces'; font-size: 24px; margin-top: 4px; color: #9CC09C;">11,890</div>
+              <div style="font-size: 11px; opacity: 0.55; margin-top: 2px;">‎ر.س · ‎15٪ احتمال</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>التدفق المتوقع</h2>
+            <p>منحنى الرصيد المتوقع مع تواريخ الأحداث المالية</p>
+          </div>
+          <div class="forecast-tabs">
+            <button>‎7 أيام</button>
+            <button class="active">‎30 يوم</button>
+            <button>‎90 يوم</button>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="forecastChart2"></canvas></div>
+        <div class="forecast-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--ink)"></span>الفعلي حتى اليوم</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>التوقع الأكثر احتمالًا</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--rose)"></span>منطقة الخطر</div>
+          <div class="legend-item"><span style="font-size:14px;">▼</span>أحداث قادمة</div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>الأحداث المالية القادمة</h2>
+        </div>
+        <div class="alerts">
+          <div class="alert info">
+            <div class="icon">💼</div>
+            <div style="flex:1">
+              <b>راتب شهر مايو</b>
+              <p>متوقع ‎+18,500 ر.س في تاريخ ‎1 مايو</p>
+              <span class="when">بعد ‎4 أيام</span>
+            </div>
+          </div>
+          <div class="alert warn">
+            <div class="icon">🏠</div>
+            <div style="flex:1">
+              <b>إيجار الشهر القادم</b>
+              <p>‎−4,200 ر.س متوقع ‎3 مايو · يجب توفّره قبل التاريخ</p>
+              <span class="when">بعد ‎6 أيام</span>
+            </div>
+          </div>
+          <div class="alert danger">
+            <div class="icon">⚠</div>
+            <div style="flex:1">
+              <b>منطقة خطر متوقعة</b>
+              <p>قد ينخفض الرصيد تحت ‎1,000 ر.س لمدة ‎3 أيام بين ‎9–11 مايو إذا بقي نمط الإنفاق كما هو.</p>
+              <span class="when">بعد ‎12 يومًا</span>
+              <div class="alert-actions">
+                <button class="chip primary">نصائح للتجنب</button>
+                <button class="chip">تجاهل</button>
+              </div>
+            </div>
+          </div>
+          <div class="alert info">
+            <div class="icon">💳</div>
+            <div style="flex:1">
+              <b>اشتراكات شهرية تتجدد</b>
+              <p>‎4 اشتراكات بإجمالي ‎645 ر.س · Netflix, Spotify, Adobe, شاهد</p>
+              <span class="when">خلال أسبوع</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: DEBTS -->
+    <!-- =========================================== -->
+    <div class="page" id="page-debts">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>الديون والالتزامات</h1>
+          <p>تتبّع كل ما عليكِ وما لكِ على الآخرين</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary">+ إضافة دين</button>
+        </div>
+      </div>
+
+      <div class="balance-card">
+        <div class="balance-row">
+          <div>
+            <div class="balance-meta">إجمالي الديون</div>
+            <div class="balance-amount" style="color:#E89595">8,750<span class="currency">ر.س</span></div>
+            <div class="balance-delta" style="background: rgba(184,92,92,0.18); color: #E89595;">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M7 7l10 10M7 17V7h10"/></svg>
+              ‎−1,250 ر.س سُدّد هذا الشهر
+            </div>
+          </div>
+          <div class="balance-stats">
+            <div class="stat-mini"><div class="label">عليكِ</div><div class="value neg">‎−8,750</div></div>
+            <div class="stat-mini"><div class="label">لكِ على الآخرين</div><div class="value pos">‎+2,400</div></div>
+            <div class="stat-mini"><div class="label">صافي</div><div class="value">‎−6,350</div></div>
+            <div class="stat-mini"><div class="label">معدّل سداد شهري</div><div class="value">1,250</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>ديون عليكِ</h2></div>
+
+      <div class="projects" style="grid-template-columns: 1fr 1fr;">
+        <div class="debt-card urgent">
+          <div class="debt-head">
+            <div class="debt-icon">🚨</div>
+            <div>
+              <div class="debt-name">قرض السيارة</div>
+              <div class="debt-meta">بنك الراجحي · قسط شهري</div>
+            </div>
+          </div>
+          <div class="debt-amount">‎4,500<small> من ‎12,000 ر.س</small></div>
+          <div class="debt-progress">
+            <div class="label-row"><span>سُدّد ‎62٪</span><span>الباقي ‎4,500</span></div>
+            <div class="bar"><i style="width: 62%"></i></div>
+          </div>
+          <div class="debt-due">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <b>عاجل:</b> القسط القادم ‎750 ر.س — بعد ‎3 أيام
+          </div>
+          <div class="debt-actions">
+            <button class="btn primary" style="flex:1;">سدّد الآن</button>
+            <button class="btn">تذكير</button>
+          </div>
+        </div>
+
+        <div class="debt-card">
+          <div class="debt-head">
+            <div class="debt-icon">💳</div>
+            <div>
+              <div class="debt-name">بطاقة فيزا</div>
+              <div class="debt-meta">سداد شهري · بنك الأهلي</div>
+            </div>
+          </div>
+          <div class="debt-amount">‎2,840<small> من ‎5,000 ر.س</small></div>
+          <div class="debt-progress">
+            <div class="label-row"><span>سُدّد ‎43٪</span><span>الباقي ‎2,840</span></div>
+            <div class="bar"><i style="width: 43%"></i></div>
+          </div>
+          <div class="debt-due">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            موعد السداد: ‎15 مايو
+          </div>
+          <div class="debt-actions">
+            <button class="btn primary" style="flex:1;">سدّد دفعة</button>
+            <button class="btn">تفاصيل</button>
+          </div>
+        </div>
+
+        <div class="debt-card">
+          <div class="debt-head">
+            <div class="debt-icon">👨‍👩‍👧</div>
+            <div>
+              <div class="debt-name">قرض من والد</div>
+              <div class="debt-meta">مساهمة في تجهيز شقة</div>
+            </div>
+          </div>
+          <div class="debt-amount">‎1,410<small> من ‎3,000 ر.س</small></div>
+          <div class="debt-progress">
+            <div class="label-row"><span>سُدّد ‎53٪</span><span>الباقي ‎1,410</span></div>
+            <div class="bar"><i style="width: 53%"></i></div>
+          </div>
+          <div class="debt-due">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            مرونة في الموعد · بدون فوائد
+          </div>
+          <div class="debt-actions">
+            <button class="btn primary" style="flex:1;">سدّد دفعة</button>
+            <button class="btn">تفاصيل</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head"><h2 style="font-size:18px;">لكِ على الآخرين</h2></div>
+      <div class="card" style="padding: 0;">
+        <div class="tx-item">
+          <div class="ic">👤</div>
+          <div class="desc">
+            <b>أحمد العتيبي</b>
+            <small>قرض شخصي · منذ ‎3 أشهر</small>
+          </div>
+          <div class="amt income">‎+1,500</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">👤</div>
+          <div class="desc">
+            <b>منى الزيد</b>
+            <small>دفعت عنها فاتورة · أسبوع</small>
+          </div>
+          <div class="amt income">‎+450</div>
+        </div>
+        <div class="tx-item" style="border-bottom: 0;">
+          <div class="ic">🏢</div>
+          <div class="desc">
+            <b>شركة سابقة · مكافأة</b>
+            <small>متأخرة منذ شهرين</small>
+          </div>
+          <div class="amt income">‎+450</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: ALERTS -->
+    <!-- =========================================== -->
+    <div class="page" id="page-alerts">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>التنبيهات الذكية</h1>
+          <p>كل تنبيه مرتبط بسياق وقصة واضحة</p>
+        </div>
+        <div class="actions">
+          <button class="btn">⚙️ إعدادات التنبيهات</button>
+        </div>
+      </div>
+
+      <div class="alert-tabs">
+        <button class="active">جميع <span class="count">12</span></button>
+        <button>عاجل <span class="count">2</span></button>
+        <button>توصيات <span class="count">5</span></button>
+        <button>تذكيرات <span class="count">3</span></button>
+        <button>إنجازات <span class="count">2</span></button>
+      </div>
+
+      <div class="alerts">
+        <div class="alert danger">
+          <div class="icon">⚠</div>
+          <div style="flex:1">
+            <b>خطر ماليّ متوقع خلال ‎12 يوم</b>
+            <p>قد ينخفض رصيدك تحت ‎1,000 ر.س قبل ‎9 مايو. أنصح بتأجيل ‎2 من اشتراكاتك أو تقليل مصاريف "مطاعم" بـ ‎30٪ هذا الأسبوع.</p>
+            <span class="when">منذ ‎15 دقيقة · عاجل</span>
+            <div class="alert-actions">
+              <button class="chip primary">شاهد الخطة</button>
+              <button class="chip">تأجيل</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert warn">
+          <div class="icon">◑</div>
+          <div style="flex:1">
+            <b>تجاوزت ميزانية "فريلانس" بنسبة ‎89٪</b>
+            <p>اقتربت من حدّ ميزانية مشروع الفريلانس. الباقي ‎327 ر.س فقط لـ ‎11 يوم.</p>
+            <span class="when">اليوم، ‎9:42 ص</span>
+            <div class="alert-actions">
+              <button class="chip primary">عدّلي الميزانية</button>
+              <button class="chip">شاهد المعاملات</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert info">
+          <div class="icon">✓</div>
+          <div style="flex:1">
+            <b>صنّفت ‎23 معاملة تلقائيًا اليوم</b>
+            <p>‎19 معاملة بثقة عالية (≥‎90٪) خُصمت مباشرة من ميزانياتها. ‎4 منها تحتاج مراجعتك السريعة.</p>
+            <span class="when">قبل قليل · ‎9:42 م</span>
+            <div class="alert-actions">
+              <button class="chip primary" data-nav="review">راجع الـ‎4</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert info">
+          <div class="icon">🎯</div>
+          <div style="flex:1">
+            <b>هدف "رحلة طوكيو" يسير ممتازًا</b>
+            <p>وفّرتِ ‎3,200 ر.س هذا الشهر — متقدّمة بـ ‎12 يومًا عن خطّتك الأصلية. بهذا المعدل ستصلين للهدف في يوليو بدلًا من سبتمبر.</p>
+            <span class="when">صباح اليوم</span>
+            <div class="alert-actions">
+              <button class="chip primary">شاهد التفاصيل</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert warn">
+          <div class="icon">📅</div>
+          <div style="flex:1">
+            <b>فاتورة الكهرباء تتأخر</b>
+            <p>عادةً تُسدد الفاتورة قبل ‎28 من الشهر. لم نرَ المعاملة بعد — ‎210 ر.س متوقعة.</p>
+            <span class="when">أمس، ‎8:00 م</span>
+            <div class="alert-actions">
+              <button class="chip primary">سُدّد الآن</button>
+              <button class="chip">دفعتها فعلًا</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert info">
+          <div class="icon">📊</div>
+          <div style="flex:1">
+            <b>نمط جديد اكتشفناه</b>
+            <p>تنفقين ‎40٪ أكثر يوم الخميس مقارنة بباقي الأسبوع، خاصة على المطاعم. هل تودّين وضع تنبيه عند الاقتراب من حدّ يومي؟</p>
+            <span class="when">أمس، ‎11:30 ص</span>
+            <div class="alert-actions">
+              <button class="chip primary">نعم، اضبط الحدّ</button>
+              <button class="chip">لا، شكرًا</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert info">
+          <div class="icon">💡</div>
+          <div style="flex:1">
+            <b>اشتراك Adobe لم تستخدميه</b>
+            <p>اشتراك Adobe Creative ‎(230 ر.س/شهر) لم يُسجّل أي نشاط من تطبيقاته في آخر ‎3 أشهر — قد تستحق إلغاءه.</p>
+            <span class="when">قبل ‎3 أيام</span>
+            <div class="alert-actions">
+              <button class="chip primary">احصل على رابط الإلغاء</button>
+              <button class="chip">أحتاجه</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert info">
+          <div class="icon">🏆</div>
+          <div style="flex:1">
+            <b>أنجزتِ أسبوع كامل بدون تجاوز ميزانيتك!</b>
+            <p>هذا الأسبوع التزمتِ بالحدود في كل المشاريع — توفير ‎480 ر.س عن المعدل العادي.</p>
+            <span class="when">قبل ‎3 أيام</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: PROJECT-PERSONAL -->
+    <!-- =========================================== -->
+    <div class="page" id="page-project-personal">
+      <div class="project-detail-hero">
+        <div style="position: relative; z-index: 1;">
+          <div class="label">مشروع</div>
+          <h2>◐ شخصي</h2>
+          <div class="stats">
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المُنفق</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px;">5,820</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المتبقي</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px; color: var(--amber-soft);">2,680</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المعاملات</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px;">42</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>نسبة استخدام الميزانية</h2>
+            <p>‎68٪ من ‎8,500 ر.س — ‎11 يوم متبقي في الشهر</p>
+          </div>
+          <button class="btn">تعديل الميزانية</button>
+        </div>
+        <div style="height: 16px; background: var(--paper-3); border-radius: 8px; overflow: hidden; position: relative;">
+          <div style="height:100%; width: 68%; background: linear-gradient(90deg, var(--amber-2), var(--amber)); border-radius: 8px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; opacity: 0.7; font-family:'Reem Kufi';">
+          <span>‎0</span>
+          <span style="color: var(--amber); font-weight: 600;">▼ ‎5,820 (الآن)</span>
+          <span>‎8,500</span>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="card">
+          <div class="card-head"><h2>الفئات الأعلى</h2></div>
+          <div class="cat-list">
+            <div class="cat-row">
+              <div class="ic">🍽️</div>
+              <div class="info">
+                <b>مطاعم</b>
+                <div class="bar"><i style="width: 80%; background:var(--amber);"></i></div>
+              </div>
+              <div class="amt">2,140</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">🛒</div>
+              <div class="info">
+                <b>تسوق</b>
+                <div class="bar"><i style="width: 55%; background:var(--rose);"></i></div>
+              </div>
+              <div class="amt">1,580</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">⛽</div>
+              <div class="info">
+                <b>وقود</b>
+                <div class="bar"><i style="width: 38%; background:var(--ink);"></i></div>
+              </div>
+              <div class="amt">890</div>
+            </div>
+            <div class="cat-row">
+              <div class="ic">💡</div>
+              <div class="info">
+                <b>فواتير</b>
+                <div class="bar"><i style="width: 30%; background:var(--sage);"></i></div>
+              </div>
+              <div class="amt">730</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2>الإنفاق الأسبوعي</h2></div>
+          <div class="chart-wrap" style="height: 240px;"><canvas id="personalChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>آخر المعاملات</h2></div>
+      <div class="tx-table">
+        <div class="tx-item">
+          <div class="ic">🚗</div>
+          <div class="desc"><b>كريم · رحلتين</b><small>اليوم · ‎5:30 م</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−68.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">💧</div>
+          <div class="desc"><b>فاتورة المياه</b><small>اليوم · ‎6:00 م</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−92.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🍽️</div>
+          <div class="desc"><b>مطعم نَجد</b><small>أمس · عشاء عائلي</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−267.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: PROJECT-WORK -->
+    <!-- =========================================== -->
+    <div class="page" id="page-project-work">
+      <div class="project-detail-hero">
+        <div style="position: relative; z-index: 1;">
+          <div class="label">مشروع</div>
+          <h2>◧ عمل</h2>
+          <div class="stats">
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المُنفق</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px;">3,140</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المتبقي</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px; color: #9CC09C;">4,560</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">قيد المراجعة</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px; color: var(--amber-soft);">312</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background: rgba(200,133,58,0.06); border-color: rgba(200,133,58,0.25);">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--amber); color: var(--ink); display: grid; place-items: center; font-size: 20px;">⏳</div>
+          <div style="flex: 1;">
+            <b style="font-family:'Reem Kufi'; font-size: 14px; display: block;">‎+312 ر.س قيد المراجعة</b>
+            <p style="font-size: 12.5px; opacity: 0.75; margin-top: 4px;">معاملتان لسنا متأكدين منهما — بعد تأكيدك ستُخصم من ميزانية "عمل".</p>
+          </div>
+          <button class="btn primary" data-nav="review">مراجعة الآن</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>نسبة استخدام الميزانية</h2>
+          <button class="btn">تعديل</button>
+        </div>
+        <div style="height: 16px; background: var(--paper-3); border-radius: 8px; overflow: hidden;">
+          <div style="height:100%; width: 41%; background: linear-gradient(90deg, var(--ink-3), var(--ink)); border-radius: 8px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; opacity: 0.7; font-family:'Reem Kufi';">
+          <span>‎0</span>
+          <span>‎41٪ من ‎7,700 ر.س</span>
+          <span>‎7,700</span>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>آخر المعاملات</h2></div>
+      <div class="tx-table">
+        <div class="tx-item">
+          <div class="ic">☕</div>
+          <div class="desc"><b>كافيه أوريغانو</b><small>اليوم · مع فريق التصميم</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−87.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">📚</div>
+          <div class="desc"><b>مكتبة جرير</b><small>اليوم · ينتظر تأكيد</small></div>
+          <div class="conf-mini med"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+          <div class="amt">‎−145.00</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🚕</div>
+          <div class="desc"><b>أوبر · مطار</b><small>أمس · سفر للاجتماع</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          <div class="amt">‎−145.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: PROJECT-FREELANCE -->
+    <!-- =========================================== -->
+    <div class="page" id="page-project-freelance">
+      <div class="project-detail-hero">
+        <div style="position: relative; z-index: 1;">
+          <div class="label">مشروع</div>
+          <h2>◨ فريلانس</h2>
+          <div class="stats">
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المُنفق</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px;">2,693</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">المتبقي</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px; color: #E89595;">327</div>
+            </div>
+            <div>
+              <div style="font-size: 11px; opacity: 0.55; letter-spacing: 1px;">الدخل من العملاء</div>
+              <div style="font-family:'Fraunces'; font-size: 28px; margin-top: 4px; color: #9CC09C;">3,500</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border: 1px solid rgba(184,92,92,0.3); background: linear-gradient(135deg, rgba(184,92,92,0.04), var(--paper-2));">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(184,92,92,0.15); color: var(--rose); display: grid; place-items: center; font-size: 20px;">⚠</div>
+          <div style="flex: 1;">
+            <b style="font-family:'Reem Kufi'; font-size: 14px; display: block;">اقتربت من حدّ الميزانية ‎(89٪)</b>
+            <p style="font-size: 12.5px; opacity: 0.75; margin-top: 4px;">الباقي ‎327 ر.س فقط لـ ‎11 يوم. توقّعي تجاوز الميزانية بـ ‎580 ر.س إذا بقي معدل الإنفاق.</p>
+          </div>
+          <button class="btn">عرض الخطة</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>الميزانية الحالية</h2>
+          <button class="btn">تعديل</button>
+        </div>
+        <div style="height: 16px; background: var(--paper-3); border-radius: 8px; overflow: hidden;">
+          <div style="height:100%; width: 89%; background: linear-gradient(90deg, #8FB28F, var(--sage), var(--amber)); border-radius: 8px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px; opacity: 0.7; font-family:'Reem Kufi';">
+          <span>‎0</span>
+          <span style="color: var(--rose); font-weight: 600;">‎89٪ من ‎3,020 ر.س</span>
+          <span>‎3,020</span>
+        </div>
+      </div>
+
+      <div class="section-head"><h2>عملاء فريلانس</h2></div>
+      <div class="tx-table">
+        <div class="tx-item">
+          <div class="ic">🏢</div>
+          <div class="desc"><b>شركة الواحة · مشروع تصميم</b><small>دفعة أولى</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt income">‎+3,500</div>
+        </div>
+        <div class="tx-item">
+          <div class="ic">🏪</div>
+          <div class="desc"><b>قرطاسية للمشروع</b><small>‎25 إبريل</small></div>
+          <div class="conf-mini high"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+          <div class="amt">‎−180.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- PAGE: SETTINGS -->
+    <!-- =========================================== -->
+    <div class="page" id="page-settings">
+      <div class="page-head">
+        <div class="ttl">
+          <h1>الإعدادات</h1>
+          <p>خصّصي تجربتك في "ماليّ"</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>الملف الشخصي</h2></div>
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 22px;">
+          <div class="avatar" style="width: 64px; height: 64px; font-size: 24px;">س</div>
+          <div>
+            <b style="font-family:'Reem Kufi'; font-size: 16px;">سارة المنصور</b>
+            <div style="font-size: 12px; opacity: 0.6;">الباقة الذهبية · مشتركة منذ يناير ‎2026</div>
+          </div>
+          <button class="btn" style="margin-right: auto;">تغيير الصورة</button>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الاسم الكامل</label>
+          <input class="form-input" value="سارة المنصور" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input class="form-input" value="sara@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الجوال</label>
+          <input class="form-input" value="‎+966 50 ‎123 4567" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>التصنيف الذكي</h2>
+            <p>تحكّم في كيفية تصنيف المعاملات تلقائيًا</p>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div>
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">حدّ الثقة للتصنيف الصامت</b>
+              <p style="font-size: 11.5px; opacity: 0.65; margin-top: 2px;">التصنيفات بثقة أعلى من هذا الحدّ تُسجّل تلقائيًا</p>
+            </div>
+            <div style="font-family:'Fraunces'; font-size: 24px; color: var(--sage); font-weight: 500;">‎90٪</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div>
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">حدّ التأكيد الخفيف</b>
+              <p style="font-size: 11.5px; opacity: 0.65; margin-top: 2px;">بين هذا الحدّ والحدّ الأعلى، نطلب تأكيدك السريع</p>
+            </div>
+            <div style="font-family:'Fraunces'; font-size: 24px; color: var(--amber); font-weight: 500;">‎70٪</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div>
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">ملخص نهاية اليوم</b>
+              <p style="font-size: 11.5px; opacity: 0.65; margin-top: 2px;">إشعار يومي قبل النوم لمراجعة المعاملات</p>
+            </div>
+            <div style="position: relative; width: 44px; height: 24px; background: var(--sage); border-radius: 12px; cursor: pointer;">
+              <div style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: var(--paper); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div>
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">تنبيهات منطقة الخطر</b>
+              <p style="font-size: 11.5px; opacity: 0.65; margin-top: 2px;">إنذار مبكر قبل انخفاض الرصيد</p>
+            </div>
+            <div style="position: relative; width: 44px; height: 24px; background: var(--sage); border-radius: 12px; cursor: pointer;">
+              <div style="position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: var(--paper); border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>الحسابات والبطاقات المربوطة</h2></div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div style="width: 44px; height: 44px; border-radius: 11px; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-family:'Reem Kufi'; font-size: 11px; font-weight: 600;">الراجحي</div>
+            <div style="flex: 1;">
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">بنك الراجحي · حساب جاري</b>
+              <small style="font-size: 11.5px; opacity: 0.6; display: block;">⋯ ‎4521 · مزامنة كل ‎15 دقيقة</small>
+            </div>
+            <div style="width: 8px; height: 8px; background: var(--sage); border-radius: 50%;"></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--paper); border-radius: 12px; border: 1px solid var(--line);">
+            <div style="width: 44px; height: 44px; border-radius: 11px; background: linear-gradient(135deg, #1a4789, #4a7bc8); color: var(--paper); display: grid; place-items: center; font-family:'Reem Kufi'; font-size: 11px; font-weight: 600;">الأهلي</div>
+            <div style="flex: 1;">
+              <b style="font-family:'Reem Kufi'; font-size: 13.5px;">بنك الأهلي · بطاقة فيزا</b>
+              <small style="font-size: 11.5px; opacity: 0.6; display: block;">⋯ ‎8842 · مزامنة كل ساعة</small>
+            </div>
+            <div style="width: 8px; height: 8px; background: var(--sage); border-radius: 50%;"></div>
+          </div>
+          <button class="btn" style="justify-content: center; padding: 14px;">+ ربط حساب جديد</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>المظهر واللغة</h2></div>
+        <div class="form-group">
+          <label class="form-label">اللغة</label>
+          <select class="form-input">
+            <option>العربية (السعودية)</option>
+            <option>English</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">العملة الافتراضية</label>
+          <select class="form-input">
+            <option>ريال سعودي (ر.س)</option>
+            <option>درهم إماراتي (د.إ)</option>
+            <option>دولار أمريكي ($)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="border-color: rgba(184,92,92,0.3);">
+        <div class="card-head"><h2 style="color: var(--rose);">منطقة خطرة</h2></div>
+        <button class="btn" style="background: rgba(184,92,92,0.10); color: var(--rose); border-color: rgba(184,92,92,0.3);">حذف الحساب نهائيًا</button>
+      </div>
+    </div>
+
+    <div style="height: 12px"></div>
+  </main>
+
+  <!-- ============= CHAT ============= -->
+  <aside class="chat">
+    <div class="chat-head">
+      <div class="ai-mark">m</div>
+      <div class="info">
+        <b>المساعد الذكي</b>
+        <small>● متصل · يصنّف بثقة ‎87٪ في المتوسط</small>
+      </div>
+      <div class="icon-btn" style="background:transparent; border:0;"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+      <div class="day-divider">— اليوم، ‎27 إبريل —</div>
+
+      <div class="msg me">
+        <div class="bubble">دفعت ‎87 ريال على قهوة مع فريق التصميم</div>
+        <span class="time">‎9:15 ص</span>
+      </div>
+
+      <div class="msg ai">
+        <div class="bubble" style="padding: 4px; background: transparent; border: 0; max-width:100%;">
+          <div class="silent-confirm">
+            <span class="ok">✓</span>
+            <div class="body">سُجّلت ‎87 ر.س — كافيه أوريغانو · <b>عمل</b></div>
+            <span class="undo">تعديل</span>
+          </div>
+        </div>
+        <span class="time">ثقة ‎94٪ · صنّفت تلقائيًا</span>
+      </div>
+
+      <div class="msg me">
+        <div class="bubble">‎145 ريال جرير</div>
+        <span class="time">‎11:32 ص</span>
+      </div>
+
+      <div class="msg ai">
+        <div class="bubble" style="padding: 4px; background: transparent; border: 0; max-width:100%;">
+          <div class="ai-card">
+            <div class="conf-ribbon med">
+              <span>ثقة متوسطة</span>
+              <div class="conf-meter"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+              <span class="conf-text">‎72٪</span>
+            </div>
+            <div class="tx-receipt">
+              <div class="tx-row"><span class="k">المبلغ</span><span class="v amount">‎145.00 ر.س</span></div>
+              <div class="tx-row"><span class="k">المتجر</span><span class="v">مكتبة جرير</span></div>
+              <div class="tx-row"><span class="k">الفئة المرجّحة</span><span class="tag work">عمل</span></div>
+              <div style="font-size:11.5px; opacity:0.65; padding: 8px 10px; background: var(--paper-2); border-radius: 8px; line-height: 1.6;">
+                💭 <b style="font-family:'Reem Kufi'; color:var(--amber)">لماذا "عمل"؟</b> آخر ‎5 مرات اشتريتِ من جرير قبل اجتماع، صنّفتها "عمل".
+              </div>
+              <div class="tx-actions">
+                <button class="chip primary">✓ تأكيد</button>
+                <button class="chip">شخصي</button>
+                <button class="chip ghost">فريلانس</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="time">تحتاج تأكيدك</span>
+      </div>
+
+      <div class="msg me">
+        <div class="bubble">‎340 ر.س</div>
+        <span class="time">‎4:12 م</span>
+      </div>
+
+      <div class="msg ai">
+        <div class="bubble" style="padding: 4px; background: transparent; border: 0; max-width:100%;">
+          <div class="ai-card">
+            <div class="conf-ribbon low">
+              <span>ما قدرت أحدد</span>
+              <div class="conf-meter"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+              <span class="conf-text">‎34٪</span>
+            </div>
+            <div class="tx-receipt">
+              <div class="tx-row"><span class="k">المبلغ</span><span class="v amount">‎340.00 ر.س</span></div>
+              <div class="tx-row"><span class="k">المشروع</span><span class="tag dim">غير محدّد</span></div>
+              <div style="font-size:12.5px; line-height:1.7; padding-top: 4px;">ساعديني أفهم — هذي المعاملة لأي مشروع؟</div>
+              <div class="tx-actions">
+                <button class="chip amber">شخصي</button>
+                <button class="chip">عمل</button>
+                <button class="chip">فريلانس</button>
+                <button class="chip ghost">⏱ لاحقًا</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="time">‎4:12 م</span>
+      </div>
+    </div>
+
+    <div class="suggestions">
+      <button class="sug" data-nav="review">📋 المعاملات المعلّقة</button>
+      <button class="sug" data-nav="analytics">📊 ملخص الشهر</button>
+      <button class="sug" data-nav="forecast">🔮 توقعات قادمة</button>
+      <button class="sug" data-nav="debts">💳 الديون</button>
+    </div>
+
+    <div class="composer">
+      <div class="composer-row">
+        <input type="text" placeholder="اكتب معاملتك أو اسأل أي شيء..." id="chatInput" />
+        <button class="send-btn" title="إرسال">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z" transform="scale(-1,1) translate(-24,0)"/></svg>
+        </button>
+        <button class="mic-btn" id="micBtn" title="تسجيل صوتي">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10a7 7 0 0 1-14 0M12 19v3"/></svg>
+        </button>
+      </div>
+      <div class="small-actions">
+        <button>📎 إيصال</button>
+        <button>🏦 ربط بطاقة</button>
+        <button>📷 فاتورة</button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- TX DETAIL MODAL -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="txModalTitle">تفاصيل المعاملة</h3>
+        <p id="txModalSubtitle">مكتبة جرير · اليوم ‎11:32 ص</p>
+      </div>
+      <button class="modal-close" id="closeTxModal">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="text-align: center; padding: 20px 0;">
+        <div style="font-family:'Fraunces'; font-size: 42px; font-weight: 400; letter-spacing:-1px;" id="txAmount">‎−145.00</div>
+        <div style="font-size: 13px; opacity: 0.6; margin-top: 4px;">ريال سعودي</div>
+      </div>
+      <div class="tx-detail-row">
+        <span class="k">التاجر</span>
+        <span class="v">مكتبة جرير · فرع التحلية</span>
+      </div>
+      <div class="tx-detail-row">
+        <span class="k">التاريخ</span>
+        <span class="v">اليوم، ‎11:32 ص</span>
+      </div>
+      <div class="tx-detail-row">
+        <span class="k">المشروع</span>
+        <span class="v"><span class="tx-tag work">عمل</span></span>
+      </div>
+      <div class="tx-detail-row">
+        <span class="k">طريقة الدفع</span>
+        <span class="v">بطاقة الراجحي ⋯ ‎4521</span>
+      </div>
+      <div class="tx-detail-row">
+        <span class="k">ثقة التصنيف</span>
+        <span class="v" style="color: var(--amber)">‎72٪ · متوسطة</span>
+      </div>
+      <div style="background: var(--paper-2); border-radius: 12px; padding: 14px; margin-top: 16px; font-size: 12.5px; line-height: 1.7;">
+        💭 <b style="font-family:'Reem Kufi'; color: var(--amber);">سياق التصنيف:</b> آخر ‎5 مرات اشتريتِ من جرير قبل اجتماع عمل، صنّفتِها "عمل". لكن أحيانًا تشترين كتب شخصية، لذلك ثقتي ليست عالية.
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn">تغيير المشروع</button>
+      <button class="btn primary">تأكيد التصنيف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============= ROUTER =============
+  function navigate(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + pageId);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+    if (navItem) navItem.classList.add('active');
+
+    // Initialize charts when their page becomes visible
+    if (pageId === 'analytics') initAnalyticsCharts();
+    if (pageId === 'forecast') initForecastChart();
+    if (pageId === 'project-personal') initPersonalChart();
+  }
+
+  document.querySelectorAll('[data-page]').forEach(el => {
+    el.addEventListener('click', e => navigate(el.dataset.page));
+  });
+  document.querySelectorAll('[data-nav]').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); navigate(el.dataset.nav); });
+  });
+
+  // ============= TX MODAL =============
+  const txModal = document.getElementById('txModal');
+  document.querySelectorAll('[data-tx]').forEach(item => {
+    item.addEventListener('click', () => {
+      txModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  document.getElementById('closeTxModal').addEventListener('click', () => {
+    txModal.classList.remove('show');
+    document.body.style.overflow = '';
+  });
+  txModal.addEventListener('click', e => {
+    if (e.target === txModal) {
+      txModal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      txModal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // ============= MIC =============
+  const micBtn = document.getElementById('micBtn');
+  let recording = false;
+  micBtn.addEventListener('click', () => { recording = !recording; micBtn.classList.toggle('rec', recording); });
+
+  // ============= TX FILTERS =============
+  document.querySelectorAll('.tx-filter').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.tx-filter').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+
+  // ============= ALERT TABS =============
+  document.querySelectorAll('.alert-tabs button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.alert-tabs button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+
+  // ============= REVIEW CHOICES =============
+  document.querySelectorAll('.review-choice').forEach(c => {
+    c.addEventListener('click', () => {
+      c.style.background = 'var(--sage)';
+      c.style.color = 'var(--paper)';
+      c.style.borderColor = 'var(--sage)';
+    });
+  });
+
+  // ============= FORECAST TABS =============
+  document.querySelectorAll('.forecast-tabs').forEach(group => {
+    group.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  });
+
+  // ============= CHAT SCROLL =============
+  const chatBody = document.getElementById('chatBody');
+  chatBody.scrollTop = chatBody.scrollHeight;
+
+  document.querySelectorAll('.silent-confirm .undo').forEach(u => {
+    u.addEventListener('click', () => { u.textContent = 'تم الحفظ'; u.style.color = 'var(--sage)'; });
+  });
+
+  // ============= CHARTS =============
+  function makeForecastData() {
+    const days = Array.from({length: 30}, (_, i) => i + 1);
+    const labels = days.map(d => d % 5 === 0 || d === 1 ? d + ' إبريل' : '');
+    const actualData = [12500, 12340, 12100, 11920, 13800, 13620, 13380, 13150, 12940, 12720, 12550, 12847];
+    const fullActual = [...actualData, ...Array(18).fill(null)];
+    const forecastData = Array(11).fill(null);
+    forecastData.push(12847);
+    let v = 12847;
+    for (let i = 13; i <= 30; i++) {
+      const dailySpend = 380 + Math.sin(i * 0.6) * 90 + (i > 25 ? 600 : 0);
+      v -= dailySpend;
+      if (i === 20) v += 4500;
+      forecastData.push(Math.max(v, -500));
+    }
+    const dangerZone = forecastData.map(val => val !== null && val < 1000 ? val : null);
+    return { labels, fullActual, forecastData, dangerZone };
+  }
+
+  function makeChart(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    if (canvas._chart) canvas._chart.destroy();
+    const ctx = canvas.getContext('2d');
+    const data = makeForecastData();
+    const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, 'rgba(200, 133, 58, 0.25)');
+    gradient.addColorStop(1, 'rgba(200, 133, 58, 0)');
+    const inkGradient = ctx.createLinearGradient(0, 0, 0, 240);
+    inkGradient.addColorStop(0, 'rgba(14, 27, 44, 0.18)');
+    inkGradient.addColorStop(1, 'rgba(14, 27, 44, 0)');
+
+    canvas._chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label: 'فعلي', data: data.fullActual, borderColor: '#0E1B2C', backgroundColor: inkGradient, borderWidth: 2.5, tension: 0.35, fill: true, pointRadius: 0, pointHoverRadius: 5 },
+          { label: 'متوقع', data: data.forecastData, borderColor: '#C8853A', backgroundColor: gradient, borderWidth: 2.5, borderDash: [5, 4], tension: 0.35, fill: true, pointRadius: 0, pointHoverRadius: 5 },
+          { label: 'منطقة الخطر', data: data.dangerZone, borderColor: '#B85C5C', backgroundColor: 'rgba(184,92,92,0.18)', borderWidth: 2, tension: 0.3, fill: true, pointRadius: 0 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#0E1B2C', titleFont: { family: "'Reem Kufi'", size: 12 }, bodyFont: { family: "'Reem Kufi'", size: 12 }, padding: 10, cornerRadius: 8, rtl: true, textDirection: 'rtl' }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: "'Reem Kufi'", size: 11 }, color: 'rgba(14,27,44,0.5)' }, reverse: true },
+          y: { grid: { color: 'rgba(14,27,44,0.06)' }, ticks: { font: { family: "'Reem Kufi'", size: 11 }, color: 'rgba(14,27,44,0.5)', callback: v => (v/1000).toFixed(0) + 'k' }, position: 'right' }
+        }
+      }
+    });
+    return canvas._chart;
+  }
+
+  // Init dashboard chart
+  makeChart('dashChart');
+
+  function initForecastChart() {
+    setTimeout(() => makeChart('forecastChart2'), 50);
+  }
+
+  function initAnalyticsCharts() {
+    setTimeout(() => {
+      // Project distribution doughnut
+      const projCanvas = document.getElementById('projChart');
+      if (projCanvas && !projCanvas._chart) {
+        const ctx = projCanvas.getContext('2d');
+        projCanvas._chart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['شخصي', 'عمل', 'فريلانس'],
+            datasets: [{
+              data: [5820, 3140, 2693],
+              backgroundColor: ['#C8853A', '#0E1B2C', '#6B8E6B'],
+              borderColor: '#F4EFE6',
+              borderWidth: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { backgroundColor: '#0E1B2C', titleFont: { family: "'Reem Kufi'" }, bodyFont: { family: "'Reem Kufi'" }, rtl: true }
+            }
+          }
+        });
+      }
+
+      // Daily spend bars
+      const spendCanvas = document.getElementById('spendChart');
+      if (spendCanvas && !spendCanvas._chart) {
+        const ctx2 = spendCanvas.getContext('2d');
+        const days = Array.from({length: 27}, (_, i) => i + 1);
+        const spending = days.map((d, i) => {
+          let base = 350 + Math.sin(i * 0.5) * 200 + Math.random() * 100;
+          if (i === 11) base = 1240;
+          if (i === 2) base = 45;
+          return Math.round(base);
+        });
+        spendCanvas._chart = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: days.map(d => d),
+            datasets: [{
+              data: spending,
+              backgroundColor: spending.map(v => v > 800 ? '#B85C5C' : v < 200 ? '#6B8E6B' : '#C8853A'),
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0E1B2C', titleFont: { family: "'Reem Kufi'" }, bodyFont: { family: "'Reem Kufi'" }, rtl: true } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { family: "'Reem Kufi'", size: 10 }, color: 'rgba(14,27,44,0.5)' }, reverse: true },
+              y: { grid: { color: 'rgba(14,27,44,0.06)' }, ticks: { font: { family: "'Reem Kufi'", size: 10 }, color: 'rgba(14,27,44,0.5)', callback: v => v + ' ر.س' }, position: 'right' }
+            }
+          }
+        });
+      }
+    }, 50);
+  }
+
+  function initPersonalChart() {
+    setTimeout(() => {
+      const canvas = document.getElementById('personalChart');
+      if (canvas && !canvas._chart) {
+        const ctx = canvas.getContext('2d');
+        canvas._chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
+            datasets: [{
+              data: [1280, 1640, 1480, 1420],
+              borderColor: '#C8853A',
+              backgroundColor: 'rgba(200,133,58,0.15)',
+              borderWidth: 2.5,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#C8853A'
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0E1B2C', titleFont: { family: "'Reem Kufi'" }, bodyFont: { family: "'Reem Kufi'" }, rtl: true } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { family: "'Reem Kufi'", size: 11 }, color: 'rgba(14,27,44,0.5)' }, reverse: true },
+              y: { grid: { color: 'rgba(14,27,44,0.06)' }, ticks: { font: { family: "'Reem Kufi'", size: 11 }, color: 'rgba(14,27,44,0.5)' }, position: 'right' }
+            }
+          }
+        });
+      }
+    }, 50);
+  }
+</script>
+
+</body>
+</html>
