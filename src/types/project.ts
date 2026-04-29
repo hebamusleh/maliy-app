@@ -21,11 +21,19 @@ export interface CardLink {
 export interface Transaction {
   id: string;
   user_id: string;
-  project_id: string;
+  project_id: string | null;
   amount: number;
   currency: string;
-  merchant?: string;
+  merchant: string | null;
   date: string;
+  status: "classified" | "pending" | "skipped";
+  confidence_score: number | null;
+  ai_reasoning: string | null;
+  payment_last4: string | null;
+  transaction_time: string | null;
+  category_id: string | null;
+  notes: string | null;
+  classified_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +49,17 @@ export interface CreateProjectForm {
 export interface LinkCardForm {
   project_id: string;
   last4: string;
+}
+
+export interface CreateTransactionForm {
+  merchant: string;
+  amount: number;
+  date: string;
+  transaction_time?: string;
+  payment_last4?: string;
+  notes?: string;
+  project_id?: string;
+  category_id?: string;
 }
 
 // Dashboard data types
