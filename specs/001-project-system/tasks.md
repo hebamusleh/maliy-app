@@ -28,9 +28,9 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Set up Supabase project and configure environment variables in .env.local
-- [ ] T002 Install required dependencies (Next.js, Supabase, TanStack Query, Recharts, Tailwind CSS) via npm
-- [ ] T003 [P] Configure TypeScript types from contracts in src/types/project.ts
+- [x] T001 Set up Supabase project and configure environment variables in .env.local
+- [x] T002 Install required dependencies (Next.js, Supabase, TanStack Query, Recharts, Tailwind CSS) via npm
+- [x] T003 [P] Configure TypeScript types from contracts in src/types/project.ts
 
 ---
 
@@ -40,12 +40,12 @@ description: "Task list template for feature implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create database schema and tables in Supabase SQL editor from data-model.md
-- [ ] T005 [P] Set up Supabase client and authentication provider in src/lib/supabase.ts
-- [ ] T006 [P] Configure RTL layout and Arabic fonts in src/app/globals.css
-- [ ] T007 Create base layout component with navigation in src/components/layout/Layout.tsx
-- [ ] T008 Set up TanStack Query provider in src/app/layout.tsx
-- [ ] T009 [P] Create reusable UI components (Button, Input, Card) in src/components/ui/
+- [x] T004 Create database schema and tables in Supabase SQL editor from data-model.md
+- [x] T005 [P] Set up Supabase client and authentication provider in src/lib/supabase.ts
+- [x] T006 [P] Configure RTL layout and Arabic fonts in src/app/globals.css
+- [x] T007 Create base layout component with navigation in src/components/layout/Layout.tsx
+- [x] T008 Set up TanStack Query provider in src/app/layout.tsx
+- [x] T009 [P] Create reusable UI components (Button, Input, Card) in src/components/ui/
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -59,11 +59,11 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Create ProjectForm component with validation in src/components/projects/ProjectForm.tsx
-- [ ] T011 [US1] Create API route for creating projects in src/app/api/projects/route.ts
-- [ ] T012 [US1] Create projects list page in src/app/projects/page.tsx
-- [ ] T013 [US1] Add form submission handling and error display in ProjectForm.tsx
-- [ ] T014 [US1] Implement project creation success feedback and navigation
+- [x] T010 [P] [US1] Create ProjectForm component with validation in src/components/projects/ProjectForm.tsx
+- [x] T011 [US1] Create API route for creating projects in src/app/api/projects/route.ts
+- [x] T012 [US1] Create projects list page in src/app/projects/page.tsx
+- [x] T013 [US1] Add form submission handling and error display in ProjectForm.tsx
+- [x] T014 [US1] Implement project creation success feedback and navigation
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -77,11 +77,11 @@ description: "Task list template for feature implementation"
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Create CardLinkForm component in src/components/projects/CardLinkForm.tsx
-- [ ] T016 [US2] Create API route for card linking in src/app/api/projects/[id]/cards/route.ts
-- [ ] T017 [US2] Update project details page to show linked cards in src/app/projects/[id]/page.tsx
-- [ ] T018 [US2] Add card linking validation and duplicate prevention
-- [ ] T019 [US2] Implement card linking success feedback
+- [x] T015 [P] [US2] Create CardLinkForm component in src/components/projects/CardLinkForm.tsx
+- [x] T016 [US2] Create API route for card linking in src/app/api/projects/[id]/cards/route.ts
+- [x] T017 [US2] Update project details page to show linked cards in src/app/projects/[id]/page.tsx
+- [x] T018 [US2] Add card linking validation and duplicate prevention
+- [x] T019 [US2] Implement card linking success feedback
 
 **Checkpoint**: At this point, User Story 2 should be fully functional and testable independently
 
