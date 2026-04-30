@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { supabase } from "@/lib/supabase";
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { supabase } from "@/lib/supabase";
 import { CreateProjectForm } from "@/types/project";
 import { NextRequest, NextResponse } from "next/server";

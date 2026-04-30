@@ -1,16 +1,24 @@
+import { NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id } = await context.params;
+
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
+
   if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    return Response.json(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const { error } = await supabase
@@ -20,7 +28,10 @@ export async function POST(
     .eq("user_id", user.id);
 
   if (error) {
-    return Response.json({ error: "فشل رفض التنبيه" }, { status: 500 });
+    return Response.json(
+      { error: "فشل رفض التنبيه" },
+      { status: 500 }
+    );
   }
 
   return Response.json({ dismissed: true });
