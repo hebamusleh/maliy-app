@@ -1,0 +1,1 @@
+alter table chat_messages disable row level security;

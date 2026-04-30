@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_merchant
 -- ─── 3. classification_rules ───────────────────────────────
 CREATE TABLE IF NOT EXISTS classification_rules (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id            UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id            TEXT NOT NULL,
   merchant_pattern   TEXT NOT NULL,
   project_id         UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   category_id        UUID REFERENCES spending_categories(id),
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS classification_rules (
 ALTER TABLE classification_rules ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users own their rules" ON classification_rules;
 CREATE POLICY "Users own their rules"
-  ON classification_rules FOR ALL USING (auth.uid() = user_id);
+  ON classification_rules FOR ALL USING (auth.uid()::text = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_rules_merchant
   ON classification_rules(user_id, merchant_pattern);
@@ -72,7 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_rules_merchant
 -- ─── 4. debts ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS debts (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id          UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id          TEXT NOT NULL,
   debtor_name      TEXT NOT NULL,
   direction        TEXT NOT NULL CHECK (direction IN ('owed_by_me','owed_to_me')),
   total_amount     DECIMAL(12,2) NOT NULL CHECK (total_amount > 0),
@@ -88,12 +88,12 @@ CREATE TABLE IF NOT EXISTS debts (
 ALTER TABLE debts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users own their debts" ON debts;
 CREATE POLICY "Users own their debts"
-  ON debts FOR ALL USING (auth.uid() = user_id);
+  ON debts FOR ALL USING (auth.uid()::text = user_id);
 
 -- ─── 5. alerts ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS alerts (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id        UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id        TEXT NOT NULL,
   type           TEXT NOT NULL CHECK (type IN ('urgent','recommendation','reminder','achievement')),
   title          TEXT NOT NULL,
   body           TEXT NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users own their alerts" ON alerts;
 CREATE POLICY "Users own their alerts"
-  ON alerts FOR ALL USING (auth.uid() = user_id);
+  ON alerts FOR ALL USING (auth.uid()::text = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_alerts_active
   ON alerts(user_id, dismissed, created_at DESC) WHERE dismissed = FALSE;
@@ -114,7 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_alerts_active
 -- ─── 6. chat_messages ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS chat_messages (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id    TEXT NOT NULL,
   role       TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content    TEXT NOT NULL,
   rich_card  JSONB,
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users own their messages" ON chat_messages;
 CREATE POLICY "Users own their messages"
-  ON chat_messages FOR ALL USING (auth.uid() = user_id);
+  ON chat_messages FOR ALL USING (auth.uid()::text = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_chat_recent
   ON chat_messages(user_id, created_at DESC);
@@ -132,7 +132,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_recent
 -- ─── 7. forecast_snapshots ────────────────────────────────
 CREATE TABLE IF NOT EXISTS forecast_snapshots (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  user_id         TEXT NOT NULL,
   horizon_days    INT NOT NULL CHECK (horizon_days IN (7,30,90)),
   pessimistic     DECIMAL(12,2) NOT NULL,
   likely          DECIMAL(12,2) NOT NULL,
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS forecast_snapshots (
 ALTER TABLE forecast_snapshots ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users own their forecasts" ON forecast_snapshots;
 CREATE POLICY "Users own their forecasts"
-  ON forecast_snapshots FOR ALL USING (auth.uid() = user_id);
+  ON forecast_snapshots FOR ALL USING (auth.uid()::text = user_id);
 
 -- ─── 8. transaction_graph view (Knowledge Graph) ──────────
 CREATE OR REPLACE VIEW transaction_graph AS
@@ -195,6 +195,6 @@ BEGIN
   ) THEN
     ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
     CREATE POLICY "Users own their transactions"
-      ON transactions FOR ALL USING (auth.uid() = user_id);
+      ON transactions FOR ALL USING (auth.uid()::text = user_id);
   END IF;
 END $$;

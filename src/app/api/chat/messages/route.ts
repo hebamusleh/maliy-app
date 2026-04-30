@@ -14,7 +14,8 @@ export async function GET() {
     .limit(50);
 
   if (error) {
-    return Response.json({ error: "فشل تحميل الرسائل" }, { status: 500 });
+    console.error("Database error in chat/messages:", error);
+    return Response.json({ error: "فشل تحميل الرسائل", details: error }, { status: 500 });
   }
 
   return Response.json({ messages: messages ?? [] });
