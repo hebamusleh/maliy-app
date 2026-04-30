@@ -61,7 +61,6 @@ export async function POST(request: Request) {
       payment_last4: body.payment_last4 ?? null,
       notes: body.notes ?? null,
       project_id: body.project_id ?? null,
-      category_id: body.category_id ?? null,
       status: body.project_id ? "classified" : "pending",
     })
     .select()

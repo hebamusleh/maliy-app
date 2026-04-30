@@ -600,6 +600,8 @@ export default function ChatPanel() {
 
       if (!response.ok || !response.body) {
         setIsStreaming(false);
+        const err = await response.json().catch(() => ({}));
+        toast.error(err.details ?? err.error ?? "فشل الاتصال بالمساعد");
         return;
       }
 

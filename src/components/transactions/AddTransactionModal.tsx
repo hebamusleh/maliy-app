@@ -19,7 +19,6 @@ const defaultForm = (): CreateTransactionForm => ({
   payment_last4: "",
   notes: "",
   project_id: "",
-  category_id: "",
 });
 
 async function createTransaction(form: CreateTransactionForm) {

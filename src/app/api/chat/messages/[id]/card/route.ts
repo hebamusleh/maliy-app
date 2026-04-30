@@ -27,7 +27,6 @@ export async function PATCH(
     .from("chat_messages")
     .select("*")
     .eq("id", id)
-    .eq("user_id", user.id)
     .single();
 
   if (fetchErr || !msg) {

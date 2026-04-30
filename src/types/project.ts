@@ -59,7 +59,6 @@ export interface CreateTransactionForm {
   payment_last4?: string;
   notes?: string;
   project_id: string;
-  category_id?: string;
 }
 
 // Dashboard data types

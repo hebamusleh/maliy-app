@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_merchant
 -- ─── 3. classification_rules ───────────────────────────────
 CREATE TABLE IF NOT EXISTS classification_rules (
   id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id            TEXT NOT NULL,
+  -- user_id            TEXT NOT NULL,
   merchant_pattern   TEXT NOT NULL,
   project_id         UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   category_id        UUID REFERENCES spending_categories(id),
@@ -72,7 +72,7 @@ CREATE INDEX IF NOT EXISTS idx_rules_merchant
 -- ─── 4. debts ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS debts (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id          TEXT NOT NULL,
+  -- user_id          TEXT NOT NULL,
   debtor_name      TEXT NOT NULL,
   direction        TEXT NOT NULL CHECK (direction IN ('owed_by_me','owed_to_me')),
   total_amount     DECIMAL(12,2) NOT NULL CHECK (total_amount > 0),
@@ -93,7 +93,7 @@ CREATE POLICY "Users own their debts"
 -- ─── 5. alerts ─────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS alerts (
   id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id        TEXT NOT NULL,
+  -- user_id        TEXT NOT NULL,
   type           TEXT NOT NULL CHECK (type IN ('urgent','recommendation','reminder','achievement')),
   title          TEXT NOT NULL,
   body           TEXT NOT NULL,
@@ -114,7 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_alerts_active
 -- ─── 6. chat_messages ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS chat_messages (
   id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    TEXT NOT NULL,
+  -- user_id    TEXT NOT NULL,
   role       TEXT NOT NULL CHECK (role IN ('user','assistant')),
   content    TEXT NOT NULL,
   rich_card  JSONB,
@@ -132,7 +132,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_recent
 -- ─── 7. forecast_snapshots ────────────────────────────────
 CREATE TABLE IF NOT EXISTS forecast_snapshots (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         TEXT NOT NULL,
+  -- user_id         TEXT NOT NULL,
   horizon_days    INT NOT NULL CHECK (horizon_days IN (7,30,90)),
   pessimistic     DECIMAL(12,2) NOT NULL,
   likely          DECIMAL(12,2) NOT NULL,
@@ -153,7 +153,7 @@ CREATE POLICY "Users own their forecasts"
 CREATE OR REPLACE VIEW transaction_graph AS
 SELECT
   t.id                AS transaction_id,
-  t.user_id,
+  -- t.user_id,
   t.merchant,
   t.amount,
   t.date,
@@ -176,7 +176,7 @@ LEFT JOIN classification_rules cr
 -- ─── 9. monthly_summary view (Analytics) ──────────────────
 CREATE OR REPLACE VIEW monthly_summary AS
 SELECT
-  user_id,
+  -- user_id,
   DATE_TRUNC('month', date::TIMESTAMPTZ) AS month,
   project_id,
   SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END)      AS income,

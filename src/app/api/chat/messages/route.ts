@@ -9,7 +9,6 @@ export async function GET() {
   const { data: messages, error } = await supabase
     .from("chat_messages")
     .select("*")
-    .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(50);
 

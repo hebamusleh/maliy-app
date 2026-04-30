@@ -111,7 +111,6 @@ export async function GET() {
   const { data: recentInsights } = await supabase
     .from("chat_messages")
     .select("rich_card")
-    .eq("user_id", user.id)
     .eq("role", "assistant")
     .gte("created_at", oneDayAgo);
 
@@ -138,7 +137,6 @@ export async function GET() {
     };
 
     await supabase.from("chat_messages").insert({
-      user_id: user.id,
       role: "assistant",
       content: p.content,
       rich_card: insightCard,

@@ -28,28 +28,27 @@ async function extractTransaction(
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
         "HTTP-Referer": "https://maliy-app.com",
-        "X-Title": "ماليّ",
+        "X-Title": "Maliy",
       },
       body: JSON.stringify({
-        model: "tencent/hy3-preview:free",
-        response_format: { type: "json_object" },
+        model: "meta-llama/llama-3.1-8b-instruct:free",
         messages: [
           {
             role: "system",
-            content: `أنت محلل مالي. استخرج من رسالة المستخدم بيانات المعاملة المالية وأعد JSON بهذا الشكل فقط:
-{"merchant":"اسم المحل أو الجهة","amount":<رقم سالب للمصروف موجب للدخل>,"category":"فئة عربية مثل مطاعم أو سوبرماركت أو راتب أو مواصلات","confidence":<0-100>}
-لا تضف أي نص خارج JSON.`,
+            content: `You are a financial data extractor. Extract transaction data from the user message and reply with ONLY a JSON object in this exact format, no other text:
+{"merchant":"store or entity name","amount":<negative number for expense, positive for income>,"category":"Arabic category like مطاعم or سوبرماركت or راتب or مواصلات","confidence":<0-100>}`,
           },
           { role: "user", content: message },
         ],
         temperature: 0.1,
-        max_tokens: 150,
+        max_tokens: 200,
       }),
     });
     if (!res.ok) throw new Error("extraction failed");
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content ?? "{}";
-    const parsed = JSON.parse(raw);
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : "{}");
     return {
       merchant: String(parsed.merchant ?? message.slice(0, 30)),
       amount: Number(parsed.amount ?? 0),
@@ -64,6 +63,7 @@ async function extractTransaction(
 }
 
 export async function POST(request: Request) {
+  try {
   const user = await getRequestUser();
 
   const body = await request.json();
@@ -75,7 +75,6 @@ export async function POST(request: Request) {
 
   // Save user message
   await supabase.from("chat_messages").insert({
-    user_id: user.id,
     role: "user",
     content: message,
     rich_card: null,
@@ -91,7 +90,7 @@ export async function POST(request: Request) {
 
   const { data: txs } = await supabase
     .from("transactions")
-    .select("amount, status, project_id, category_id, spending_categories(name_ar)")
+    .select("amount, status, project_id")
     .eq("user_id", user.id)
     .gte("date", monthStart);
 
@@ -100,19 +99,7 @@ export async function POST(request: Request) {
   const expenses = classified.reduce((s, t) => s + (t.amount < 0 ? Math.abs(t.amount) : 0), 0);
   const pending = (txs ?? []).filter((t) => t.status === "pending").length;
 
-  // Per-category spend (top 3)
-  const categoryMap = new Map<string, number>();
-  for (const t of classified) {
-    if (t.amount < 0) {
-      const cat = (t as { spending_categories?: { name_ar?: string } }).spending_categories?.name_ar ?? "أخرى";
-      categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + Math.abs(t.amount));
-    }
-  }
-  const topCategories = [...categoryMap.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, amt]) => `  - ${name}: ${amt.toFixed(0)} ريال`)
-    .join("\n");
+  const topCategories = "";
 
   // Per-project spend
   const { data: projects } = await supabase
@@ -163,7 +150,6 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
   const { data: history } = await supabase
     .from("chat_messages")
     .select("role, content")
-    .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(10);
 
@@ -201,7 +187,6 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
     }
 
     await supabase.from("chat_messages").insert({
-      user_id: user.id,
       role: "assistant",
       content: fallback,
       rich_card: richCard,
@@ -230,10 +215,10 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
       "HTTP-Referer": "https://maliy-app.com",
-      "X-Title": "ماليّ",
+      "X-Title": "Maliy",
     },
     body: JSON.stringify({
-      model: "tencent/hy3-preview:free",
+      model: "meta-llama/llama-3.1-8b-instruct:free",
       stream: true,
       messages: [
         { role: "system", content: systemPrompt },
@@ -246,14 +231,25 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
   });
 
   if (!openRouterRes.ok || !openRouterRes.body) {
-    const fallback = "عذراً، حدث خطأ في الاتصال. حاول مجدداً بعد قليل.";
+    const errBody = await openRouterRes.text().catch(() => "");
+    console.error("OpenRouter error:", openRouterRes.status, errBody);
+    const fallback = "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. حاول مجدداً بعد قليل.";
     await supabase.from("chat_messages").insert({
-      user_id: user.id,
       role: "assistant",
       content: fallback,
       rich_card: null,
     });
-    return Response.json({ error: fallback }, { status: 502 });
+    const errStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(
+          new TextEncoder().encode(`data: ${JSON.stringify({ type: "text", content: fallback })}\n\ndata: [DONE]\n\n`)
+        );
+        controller.close();
+      },
+    });
+    return new Response(errStream, {
+      headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" },
+    });
   }
 
   // Pipe SSE stream to client
@@ -315,7 +311,6 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
             };
           }
           await supabase.from("chat_messages").insert({
-            user_id: user.id,
             role: "assistant",
             content: fullContent,
             rich_card: richCard,
@@ -332,4 +327,11 @@ ${projectLines || "  - لا توجد مشاريع بعد"}
       Connection: "keep-alive",
     },
   });
+  } catch (err) {
+    console.error("POST /api/chat error:", err);
+    return Response.json(
+      { error: "خطأ داخلي", details: err instanceof Error ? err.message : String(err) },
+      { status: 500 }
+    );
+  }
 }
