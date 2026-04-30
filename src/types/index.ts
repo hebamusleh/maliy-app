@@ -74,10 +74,13 @@ export interface AlertCounts {
 // ─── Chat ────────────────────────────────────────────────────
 export interface TxReceiptCard {
   type: "tx_receipt";
-  transaction_id: string;
+  transaction_id: string | null;  // null = pending (not yet confirmed)
   merchant: string;
   amount: number;
+  category: string;               // Arabic label e.g. "مطاعم"
+  confidence: number;             // 0–100 integer
   suggestions: Array<{ label: string; project_id: string }>;
+  status: "pending" | "confirmed" | "deleted";
 }
 
 export interface ChipsCard {
@@ -85,7 +88,14 @@ export interface ChipsCard {
   chips: Array<{ label: string; action: string; payload?: unknown }>;
 }
 
-export type RichCard = TxReceiptCard | ChipsCard;
+export interface InsightCard {
+  type: "insight";
+  pattern: "repeated_merchant" | "budget_warning" | "anomaly";
+  action_label: string;
+  action_payload: Record<string, unknown>;
+}
+
+export type RichCard = TxReceiptCard | ChipsCard | InsightCard;
 
 export interface ChatMessage {
   id: string;
