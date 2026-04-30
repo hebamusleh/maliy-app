@@ -65,7 +65,7 @@ export default function ProjectDistributionChart({ data }: ProjectDistributionCh
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => [formatAmount(value), "المبلغ"]}
+            formatter={(value) => [formatAmount(Number(value ?? 0)), "المبلغ"]}
             contentStyle={{
               background: "var(--ink)",
               border: "none",

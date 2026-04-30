@@ -114,8 +114,8 @@ export default function CashFlowChart({ data, dangerZones = [] }: CashFlowChartP
                 borderRadius: 12,
                 direction: "rtl",
               }}
-              formatter={(value: number, name: string) => [
-                `${value.toLocaleString("ar-SA")} ر.س`,
+              formatter={(value, name) => [
+                `${Number(value ?? 0).toLocaleString("ar-SA")} ر.س`,
                 name === "actual" ? "الرصيد الفعلي" : "التوقع",
               ]}
             />

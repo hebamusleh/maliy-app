@@ -109,8 +109,10 @@ export async function GET(request: Request) {
     savings_rate,
     income_change_pct,
     expenses_change_pct,
-    categories,
-    project_distribution,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    categories: categories as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    project_distribution: project_distribution as any,
     daily_spend,
   };
 

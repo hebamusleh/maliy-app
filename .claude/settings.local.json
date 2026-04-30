@@ -10,7 +10,13 @@
       "Bash(cd \"C:/Users/msi/OneDrive/Desktop/maliy/maliy-application\" && powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json 2>&1)",
       "Bash(cd \"C:/Users/msi/OneDrive/Desktop/maliy/maliy-application\" && powershell -ExecutionPolicy Bypass -File \".specify/scripts/powershell/check-prerequisites.ps1\" -Json -RequireTasks -IncludeTasks 2>&1)",
       "Bash(cd \"C:/Users/msi/OneDrive/Desktop/maliy/maliy-application\" && pnpm add date-fns react-hot-toast 2>&1 | tail -5)",
-      "Bash(cd \"C:/Users/msi/OneDrive/Desktop/maliy/maliy-application\" && npm install date-fns react-hot-toast 2>&1 | tail -5)"
+      "Bash(cd \"C:/Users/msi/OneDrive/Desktop/maliy/maliy-application\" && npm install date-fns react-hot-toast 2>&1 | tail -5)",
+      "Bash(powershell.exe:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

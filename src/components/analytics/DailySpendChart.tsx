@@ -86,12 +86,12 @@ export default function DailySpendChart({ data, month }: DailySpendChartProps) {
             }
           />
           <Tooltip
-            formatter={(value: number) => [
+            formatter={(value) => [
               new Intl.NumberFormat("ar-SA", {
                 style: "currency",
                 currency: "SAR",
                 maximumFractionDigits: 0,
-              }).format(value),
+              }).format(Number(value ?? 0)),
               "الإنفاق",
             ]}
             contentStyle={{

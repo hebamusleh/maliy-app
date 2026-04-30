@@ -92,12 +92,12 @@ export default function ForecastChart({ forecast }: ForecastChartProps) {
             );
           })}
           <Tooltip
-            formatter={(value: number) => [
+            formatter={(value) => [
               new Intl.NumberFormat("ar-SA", {
                 style: "currency",
                 currency: "SAR",
                 maximumFractionDigits: 0,
-              }).format(value),
+              }).format(Number(value ?? 0)),
               "الرصيد المتوقع",
             ]}
             contentStyle={{
