@@ -4,6 +4,7 @@ import QueryClientProviderWrapper from "@/components/providers/QueryClientProvid
 import { Fraunces, Noto_Naskh_Arabic, Reem_Kufi } from "next/font/google";
 import type { Metadata } from "next";
 import "./globals.css";
+import ShellLayout from "@/components/layout/Layout";
 
 const reemKufi = Reem_Kufi({
   subsets: ["arabic"],
@@ -52,7 +53,7 @@ export default function RootLayout({
         </a>
         <QueryClientProviderWrapper>
           <ErrorBoundary>
-            <Layout>{children}</Layout>
+            <ShellLayout>{children}</ShellLayout>
           </ErrorBoundary>
         </QueryClientProviderWrapper>
       </body>
