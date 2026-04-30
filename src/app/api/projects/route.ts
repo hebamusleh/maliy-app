@@ -1,19 +1,13 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { CreateProjectForm } from "@/types/project";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getRequestUser();
 
     const body: CreateProjectForm = await request.json();
 
@@ -57,16 +51,9 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getRequestUser();
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data, error } = await supabase
+    const { data: projects, error } = await supabase
       .from("projects")
       .select("*")
       .eq("user_id", user.id)
@@ -80,7 +67,28 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({ projects: data });
+    // Compute per-project spend from transactions
+    const { data: spendRows } = await supabase
+      .from("transactions")
+      .select("project_id, amount")
+      .eq("user_id", user.id)
+      .lt("amount", 0);
+
+    const spendMap = new Map<string, number>();
+    for (const row of spendRows ?? []) {
+      if (!row.project_id) continue;
+      spendMap.set(row.project_id, (spendMap.get(row.project_id) ?? 0) + Math.abs(row.amount));
+    }
+
+    const enriched = (projects ?? []).map((p) => {
+      const spend = spendMap.get(p.id) ?? 0;
+      const budget_used_pct = p.budget_limit
+        ? Math.round((spend / p.budget_limit) * 1000) / 10
+        : null;
+      return { ...p, spend, budget_used_pct };
+    });
+
+    return NextResponse.json({ projects: enriched });
   } catch (error) {
     console.error("API error:", error);
     return NextResponse.json(

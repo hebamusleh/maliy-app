@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -8,18 +9,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return Response.json(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const user = await getRequestUser();
 
   const { error } = await supabase
     .from("alerts")

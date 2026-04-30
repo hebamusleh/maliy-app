@@ -19,9 +19,10 @@ const projectSchema = z.object({
 interface ProjectFormProps {
   onSubmit: (data: CreateProjectForm) => Promise<void>;
   onCancel: () => void;
+  initialValues?: Partial<CreateProjectForm>;
 }
 
-export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
+export default function ProjectForm({ onSubmit, onCancel, initialValues }: ProjectFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
     watch,
   } = useForm<CreateProjectForm>({
     resolver: zodResolver(projectSchema),
+    defaultValues: initialValues,
   });
 
   const selectedType = watch("type");
@@ -53,7 +55,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
 
   return (
     <Card className="max-w-md mx-auto">
-      <h2 className="text-xl font-heading font-bold mb-4">إنشاء مشروع جديد</h2>
+      <h2 className="text-xl font-heading font-bold mb-4">{initialValues ? "تعديل المشروع" : "إنشاء مشروع جديد"}</h2>
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
         <Input
@@ -104,7 +106,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
                   type="radio"
                   value={value}
                   {...register("type")}
-                  className="ml-2"
+                  className="me-2"
                   aria-checked={selectedType === value}
                 />
                 {label}
@@ -127,7 +129,7 @@ export default function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
 
         <div className="flex gap-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "جاري الإنشاء..." : "إنشاء"}
+            {isSubmitting ? "جاري الحفظ..." : initialValues ? "حفظ التعديلات" : "إنشاء"}
           </Button>
           <Button type="button" variant="secondary" onClick={onCancel}>
             إلغاء

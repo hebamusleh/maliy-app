@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,15 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const user = await getRequestUser();
     const projectId = (await params).id;
     const body = await request.json();
     const { last4 } = body;
@@ -41,11 +34,12 @@ export async function POST(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    // Check if card is already linked to any project by this user
+    // Check for exact duplicate (same project + same last4)
     const { data: existingLink, error: linkError } = await supabase
       .from("card_links")
-      .select("id, project_id")
+      .select("id")
       .eq("user_id", user.id)
+      .eq("project_id", projectId)
       .eq("last4", last4)
       .maybeSingle();
 
@@ -58,17 +52,10 @@ export async function POST(
     }
 
     if (existingLink) {
-      if (existingLink.project_id === projectId) {
-        return NextResponse.json(
-          { error: "Card already linked to this project" },
-          { status: 400 },
-        );
-      } else {
-        return NextResponse.json(
-          { error: "Card already linked to another project" },
-          { status: 400 },
-        );
-      }
+      return NextResponse.json(
+        { error: "Card already linked to this project" },
+        { status: 400 },
+      );
     }
 
     // Create the link
@@ -105,15 +92,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
+    const user = await getRequestUser();
     const projectId = (await params).id;
 
     const { data, error } = await supabase

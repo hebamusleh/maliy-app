@@ -4,6 +4,7 @@ import {
   calculateProjectStats,
   generateProjectInsights,
 } from "@/lib/project-stats";
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,14 +13,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const user = await getRequestUser();
 
     const projectId = (await params).id;
 

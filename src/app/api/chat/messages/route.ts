@@ -1,16 +1,10 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const { data: messages, error } = await supabase
     .from("chat_messages")

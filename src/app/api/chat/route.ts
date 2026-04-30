@@ -1,18 +1,12 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
 
 export async function POST(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const body = await request.json();
   const { message } = body as { message: string };

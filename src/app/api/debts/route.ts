@@ -1,16 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import type { Debt, DebtSummary } from "@/types/index";
 
 export async function GET() {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const { data: debts, error } = await supabase
     .from("debts")
@@ -42,13 +37,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const body = await request.json();
   const { debtor_name, direction, total_amount, due_date, notes, is_interest_free } = body;

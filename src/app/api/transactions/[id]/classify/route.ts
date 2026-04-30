@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { learnClassification } from "@/lib/classification";
 
@@ -8,13 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const body = await request.json();
   const { project_id, category_id, apply_to_merchant } = body;

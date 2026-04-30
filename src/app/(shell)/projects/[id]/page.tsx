@@ -4,6 +4,8 @@ import { use, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ProjectDashboard } from "@/types/project";
 import ProjectDetailHero from "@/components/projects/ProjectDetailHero";
+import ProjectPnLChart from "@/components/projects/ProjectPnLChart";
+import ProjectCashFlowChart from "@/components/projects/ProjectCashFlowChart";
 import TransactionList from "@/components/transactions/TransactionList";
 import TransactionDetailModal from "@/components/transactions/TransactionDetailModal";
 import type { Transaction } from "@/types/project";
@@ -66,6 +68,14 @@ export default function ProjectDetailPage({
     <div className="flex flex-col gap-5">
       {/* Hero card */}
       <ProjectDetailHero project={project} stats={stats} />
+
+      {/* Charts */}
+      {recent_transactions.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ProjectPnLChart transactions={recent_transactions} />
+          <ProjectCashFlowChart transactions={recent_transactions} />
+        </div>
+      )}
 
       {/* AI Insights */}
       {data.insights && data.insights.length > 0 && (

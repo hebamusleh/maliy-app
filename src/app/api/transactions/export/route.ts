@@ -1,13 +1,8 @@
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export async function GET(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const url = new URL(request.url);
   const projectId = url.searchParams.get("project_id");

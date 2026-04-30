@@ -1,16 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import type { Transaction } from "@/types/project";
 
 export async function GET(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const url = new URL(request.url);
   const projectId = url.searchParams.get("project_id");
@@ -47,13 +42,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const body = await request.json();
   if (!body.merchant || body.amount === undefined || !body.date) {

@@ -16,7 +16,7 @@
 
 **Purpose**: Create the no-auth helper that every subsequent task depends on.
 
-- [ ] T001 Create `src/lib/auth.ts` exporting `getRequestUser()` — returns Supabase user when authenticated, or `{ id: 'anon-user' }` when auth is absent or fails
+- [x] T001 Create `src/lib/auth.ts` exporting `getRequestUser()` — returns Supabase user when authenticated, or `{ id: 'anon-user' }` when auth is absent or fails
 
 **Checkpoint**: `getRequestUser()` is importable and returns an object with `id` field in all cases.
 
@@ -28,10 +28,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete — all API routes return 401 without it.
 
-- [ ] T002 [P] Update `src/app/api/projects/route.ts`, `src/app/api/projects/[id]/route.ts`, `src/app/api/projects/[id]/dashboard/route.ts`, `src/app/api/projects/[id]/cards/route.ts` — replace `supabase.auth.getUser()` pattern with `const user = await getRequestUser()`, remove 401 guard
-- [ ] T003 [P] Update `src/app/api/transactions/route.ts`, `src/app/api/transactions/[id]/classify/route.ts`, `src/app/api/transactions/export/route.ts`, `src/app/api/transactions/classify-bulk/route.ts` — same getRequestUser() migration
-- [ ] T004 [P] Update `src/app/api/analytics/route.ts`, `src/app/api/dashboard/route.ts`, `src/app/api/forecast/route.ts`, `src/app/api/alerts/route.ts`, `src/app/api/alerts/[id]/dismiss/route.ts`, `src/app/api/debts/route.ts`, `src/app/api/debts/[id]/route.ts`, `src/app/api/debts/[id]/payment/route.ts`, `src/app/api/chat/route.ts`, `src/app/api/chat/messages/route.ts` — same getRequestUser() migration
-- [ ] T005 Create `src/app/api/seed/route.ts` — dev-only POST endpoint (guards with `NODE_ENV === 'production'` check): deletes existing anon-user data then inserts 3 projects (`الشخصي`/🏠/personal/3000, `عمل`/💼/business/10000, `فريلانس`/💻/freelance/5000) plus 6–8 transactions per project with mix of positive/negative amounts dated across the last 3 months
+- [x] T002 [P] Update `src/app/api/projects/route.ts`, `src/app/api/projects/[id]/route.ts`, `src/app/api/projects/[id]/dashboard/route.ts`, `src/app/api/projects/[id]/cards/route.ts` — replace `supabase.auth.getUser()` pattern with `const user = await getRequestUser()`, remove 401 guard
+- [x] T003 [P] Update `src/app/api/transactions/route.ts`, `src/app/api/transactions/[id]/classify/route.ts`, `src/app/api/transactions/export/route.ts`, `src/app/api/transactions/classify-bulk/route.ts` — same getRequestUser() migration
+- [x] T004 [P] Update `src/app/api/analytics/route.ts`, `src/app/api/dashboard/route.ts`, `src/app/api/forecast/route.ts`, `src/app/api/alerts/route.ts`, `src/app/api/alerts/[id]/dismiss/route.ts`, `src/app/api/debts/route.ts`, `src/app/api/debts/[id]/route.ts`, `src/app/api/debts/[id]/payment/route.ts`, `src/app/api/chat/route.ts`, `src/app/api/chat/messages/route.ts` — same getRequestUser() migration
+- [x] T005 Create `src/app/api/seed/route.ts` — dev-only POST endpoint (guards with `NODE_ENV === 'production'` check): deletes existing anon-user data then inserts 3 projects (`الشخصي`/🏠/personal/3000, `عمل`/💼/business/10000, `فريلانس`/💻/freelance/5000) plus 6–8 transactions per project with mix of positive/negative amounts dated across the last 3 months
 
 **Checkpoint**: `GET /api/projects` returns `{ projects: [] }` without a Supabase session. `POST /api/seed` inserts test data.
 
@@ -45,11 +45,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Update `src/app/api/projects/[id]/cards/route.ts` — remove the `else` branch that returns 400 when a card is already linked to a *different* project; keep only the check for exact duplicates (`same project_id + same last4`)
-- [ ] T007 [P] [US1] Create `src/app/api/projects/[id]/cards/[cardId]/route.ts` — DELETE handler that verifies `user_id` ownership and deletes the card link record
-- [ ] T008 [US1] Extend `src/components/projects/ProjectForm.tsx` — add optional `initialValues?: Partial<CreateProjectForm>` prop; pass it as `defaultValues` to `useForm`; change heading to `initialValues ? 'تعديل المشروع' : 'إنشاء مشروع جديد'`
-- [ ] T009 [US1] Create `src/app/(shell)/projects/page.tsx` — unified projects list page: `useQuery(['projects'])` for project list, `useState(false)` for create form visibility, render inline `ProjectForm` when open, render projects in a `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4` using the existing `Card` component (full `ProjectCard` component added in US2), empty state with "لا توجد مشاريع بعد" + "إنشاء مشروعك الأول" button + "إضافة بيانات تجريبية" button that calls `POST /api/seed`; invalidate `['projects']` query after create
-- [ ] T010 [US1] Delete `src/app/projects/page.tsx` — the old projects page outside the shell group is now replaced by `src/app/(shell)/projects/page.tsx`
+- [x] T006 [P] [US1] Update `src/app/api/projects/[id]/cards/route.ts` — remove the `else` branch that returns 400 when a card is already linked to a *different* project; keep only the check for exact duplicates (`same project_id + same last4`)
+- [x] T007 [P] [US1] Create `src/app/api/projects/[id]/cards/[cardId]/route.ts` — DELETE handler that verifies `user_id` ownership and deletes the card link record
+- [x] T008 [US1] Extend `src/components/projects/ProjectForm.tsx` — add optional `initialValues?: Partial<CreateProjectForm>` prop; pass it as `defaultValues` to `useForm`; change heading to `initialValues ? 'تعديل المشروع' : 'إنشاء مشروع جديد'`
+- [x] T009 [US1] Create `src/app/(shell)/projects/page.tsx` — unified projects list page: `useQuery(['projects'])` for project list, `useState(false)` for create form visibility, render inline `ProjectForm` when open, render projects in a `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4` using the existing `Card` component (full `ProjectCard` component added in US2), empty state with "لا توجد مشاريع بعد" + "إنشاء مشروعك الأول" button + "إضافة بيانات تجريبية" button that calls `POST /api/seed`; invalidate `['projects']` query after create
+- [x] T010 [US1] Delete `src/app/projects/page.tsx` — the old projects page outside the shell group is now replaced by `src/app/(shell)/projects/page.tsx`
 
 **Checkpoint**: User can navigate to `/projects`, create a project via the form, and see it appear in the list. Seed button populates example data.
 
@@ -63,10 +63,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Extend GET handler in `src/app/api/projects/route.ts` — after fetching projects, run a grouped aggregation: `SELECT project_id, SUM(ABS(amount)) as spend FROM transactions WHERE amount < 0 AND user_id = :userId GROUP BY project_id`; merge `spend` and `budget_used_pct` into each project object in the response
-- [ ] T012 [P] [US2] Update `src/components/layout/Sidebar.tsx` — remove the `{ label: 'المشاريع', type: 'section' }` header and three nav items (`/projects/personal`, `/projects/work`, `/projects/freelance`); add a single nav item `{ page: '/projects', label: 'المشاريع', icon: <folder SVG> }` in their place between the alerts item and the "إعدادات" section header
-- [ ] T013 [US2] Create `src/components/projects/ProjectCard.tsx` — props: `{ project: Project & { spend?: number }, onEdit: (p: Project) => void, onDelete: (id: string) => void }`; card layout: project icon + name + type badge; if `budget_limit` set, show spend/budget text and progress bar (color: `var(--sage)` below 85%, `var(--rose)` at/above 85%); edit (pencil) and delete (trash) icon buttons that stop event propagation; clicking the card navigates to `/projects/[id]`; delete shows inline Arabic confirm before calling `onDelete`; style: `background: var(--paper-2)`, `border: 1px solid var(--line)`, `border-radius: rounded-2xl`, font/color tokens matching existing components
-- [ ] T014 [US2] Update `src/app/(shell)/projects/page.tsx` — replace the plain `Card` rendering loop with `ProjectCard` components; pass `onEdit` that sets a `useState<Project | null>` to open `ProjectForm` in edit mode with `initialValues`; pass `onDelete` that calls `DELETE /api/projects/:id` and invalidates `['projects']` on success; pass spend data from the enhanced GET response
+- [x] T011 [P] [US2] Extend GET handler in `src/app/api/projects/route.ts` — after fetching projects, run a grouped aggregation: `SELECT project_id, SUM(ABS(amount)) as spend FROM transactions WHERE amount < 0 AND user_id = :userId GROUP BY project_id`; merge `spend` and `budget_used_pct` into each project object in the response
+- [x] T012 [P] [US2] Update `src/components/layout/Sidebar.tsx` — remove the `{ label: 'المشاريع', type: 'section' }` header and three nav items (`/projects/personal`, `/projects/work`, `/projects/freelance`); add a single nav item `{ page: '/projects', label: 'المشاريع', icon: <folder SVG> }` in their place between the alerts item and the "إعدادات" section header
+- [x] T013 [US2] Create `src/components/projects/ProjectCard.tsx` — props: `{ project: Project & { spend?: number }, onEdit: (p: Project) => void, onDelete: (id: string) => void }`; card layout: project icon + name + type badge; if `budget_limit` set, show spend/budget text and progress bar (color: `var(--sage)` below 85%, `var(--rose)` at/above 85%); edit (pencil) and delete (trash) icon buttons that stop event propagation; clicking the card navigates to `/projects/[id]`; delete shows inline Arabic confirm before calling `onDelete`; style: `background: var(--paper-2)`, `border: 1px solid var(--line)`, `border-radius: rounded-2xl`, font/color tokens matching existing components
+- [x] T014 [US2] Update `src/app/(shell)/projects/page.tsx` — replace the plain `Card` rendering loop with `ProjectCard` components; pass `onEdit` that sets a `useState<Project | null>` to open `ProjectForm` in edit mode with `initialValues`; pass `onDelete` that calls `DELETE /api/projects/:id` and invalidates `['projects']` on success; pass spend data from the enhanced GET response
 
 **Checkpoint**: All projects visible on one page as styled cards with budget bars. Sidebar has single Projects link. Edit/delete UI visible (backing API wired in US5).
 
@@ -80,9 +80,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [P] [US3] Create `src/components/projects/ProjectPnLChart.tsx` — props: `{ transactions: Transaction[] }`; call `prepareChartData(transactions)` from `src/lib/project-stats.ts` to get `{ month, income, expenses }[]`; render Recharts `<BarChart>` with two `<Bar>` series (income: `var(--sage)`, expenses: `var(--rose)`); Arabic X-axis month labels; `<Tooltip>` and `<Legend>` in Arabic; wrap in `rounded-2xl` card with heading "الأرباح والخسائر"
-- [ ] T016 [P] [US3] Create `src/components/projects/ProjectCashFlowChart.tsx` — props: `{ transactions: Transaction[] }`; derive running balance by sorting transactions by date and computing cumulative sum of `amount`; render Recharts `<LineChart>` with single `<Line>` (stroke: `var(--amber-2)`); add `<ReferenceLine y={0}>` for break-even reference; wrap in `rounded-2xl` card with heading "التدفق النقدي"
-- [ ] T017 [US3] Update `src/app/(shell)/projects/[id]/page.tsx` — import `ProjectPnLChart` and `ProjectCashFlowChart`; render them between `ProjectDetailHero` and the insights section; pass `data.recent_transactions` to both; conditionally render both charts only when `recent_transactions.length > 0`
+- [x] T015 [P] [US3] Create `src/components/projects/ProjectPnLChart.tsx` — props: `{ transactions: Transaction[] }`; call `prepareChartData(transactions)` from `src/lib/project-stats.ts` to get `{ month, income, expenses }[]`; render Recharts `<BarChart>` with two `<Bar>` series (income: `var(--sage)`, expenses: `var(--rose)`); Arabic X-axis month labels; `<Tooltip>` and `<Legend>` in Arabic; wrap in `rounded-2xl` card with heading "الأرباح والخسائر"
+- [x] T016 [P] [US3] Create `src/components/projects/ProjectCashFlowChart.tsx` — props: `{ transactions: Transaction[] }`; derive running balance by sorting transactions by date and computing cumulative sum of `amount`; render Recharts `<LineChart>` with single `<Line>` (stroke: `var(--amber-2)`); add `<ReferenceLine y={0}>` for break-even reference; wrap in `rounded-2xl` card with heading "التدفق النقدي"
+- [x] T017 [US3] Update `src/app/(shell)/projects/[id]/page.tsx` — import `ProjectPnLChart` and `ProjectCashFlowChart`; render them between `ProjectDetailHero` and the insights section; pass `data.recent_transactions` to both; conditionally render both charts only when `recent_transactions.length > 0`
 
 **Checkpoint**: Opening `/projects/[id]` for a seeded project shows P&L bar chart, cash flow line chart, AI insights, and transaction list — all containing only data from that project.
 
@@ -96,8 +96,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T018 [US4] Update `src/types/project.ts` — change `CreateTransactionForm.project_id` from `project_id?: string` to `project_id: string` (required field)
-- [ ] T019 [US4] Update `src/components/transactions/AddTransactionModal.tsx` — add `useQuery(['projects'])` hook to load all projects; add a required `<select>` field for `project_id` above the other form fields with label "المشروع"; update zod schema: `project_id: z.string().min(1, 'اختر مشروعاً')`; auto-select the first project when the list contains exactly one project; style the select element to match the existing `Input` component appearance using the same CSS variables
+- [x] T018 [US4] Update `src/types/project.ts` — change `CreateTransactionForm.project_id` from `project_id?: string` to `project_id: string` (required field)
+- [x] T019 [US4] Update `src/components/transactions/AddTransactionModal.tsx` — add `useQuery(['projects'])` hook to load all projects; add a required `<select>` field for `project_id` above the other form fields with label "المشروع"; update zod schema: `project_id: z.string().min(1, 'اختر مشروعاً')`; auto-select the first project when the list contains exactly one project; style the select element to match the existing `Input` component appearance using the same CSS variables
 
 **Checkpoint**: Adding a transaction requires selecting a project. The created transaction appears in that project's dashboard and not in others.
 
@@ -111,10 +111,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T020 [US5] Add PATCH handler to `src/app/api/projects/[id]/route.ts` — accepts partial body `{ name?, icon?, type?, budget_limit? }`; validates each provided field with same rules as POST; runs `UPDATE projects SET ... WHERE id = :id AND user_id = :userId`; returns `{ project: updatedProject }`
-- [ ] T021 [US5] Add DELETE handler to `src/app/api/projects/[id]/route.ts` — step 1: `UPDATE transactions SET project_id = NULL WHERE project_id = :id AND user_id = :userId`; step 2: `DELETE FROM card_links WHERE project_id = :id AND user_id = :userId`; step 3: `DELETE FROM projects WHERE id = :id AND user_id = :userId`; returns `{ message: 'تم حذف المشروع' }`
-- [ ] T022 [US5] Wire edit flow in `src/app/(shell)/projects/page.tsx` — `onEdit` callback sets `editingProject` state; renders `ProjectForm` with `initialValues={editingProject}` above the grid; `onSubmit` calls `PATCH /api/projects/:id`; on success closes form and invalidates `['projects']` query
-- [ ] T023 [US5] Wire delete flow in `src/app/(shell)/projects/page.tsx` — `onDelete` callback calls `DELETE /api/projects/:id`; on success shows success toast and invalidates `['projects']` query; error shows error toast
+- [x] T020 [US5] Add PATCH handler to `src/app/api/projects/[id]/route.ts` — accepts partial body `{ name?, icon?, type?, budget_limit? }`; validates each provided field with same rules as POST; runs `UPDATE projects SET ... WHERE id = :id AND user_id = :userId`; returns `{ project: updatedProject }`
+- [x] T021 [US5] Add DELETE handler to `src/app/api/projects/[id]/route.ts` — step 1: `UPDATE transactions SET project_id = NULL WHERE project_id = :id AND user_id = :userId`; step 2: `DELETE FROM card_links WHERE project_id = :id AND user_id = :userId`; step 3: `DELETE FROM projects WHERE id = :id AND user_id = :userId`; returns `{ message: 'تم حذف المشروع' }`
+- [x] T022 [US5] Wire edit flow in `src/app/(shell)/projects/page.tsx` — `onEdit` callback sets `editingProject` state; renders `ProjectForm` with `initialValues={editingProject}` above the grid; `onSubmit` calls `PATCH /api/projects/:id`; on success closes form and invalidates `['projects']` query
+- [x] T023 [US5] Wire delete flow in `src/app/(shell)/projects/page.tsx` — `onDelete` callback calls `DELETE /api/projects/:id`; on success shows success toast and invalidates `['projects']` query; error shows error toast
 
 **Checkpoint**: Edit saves changes and updates the card immediately. Delete removes the project; transactions remain visible in the Transactions page without a project.
 
@@ -124,9 +124,9 @@
 
 **Purpose**: Consistency, loading states, and final validation.
 
-- [ ] T024 [P] Add loading and error states to `src/app/(shell)/projects/page.tsx` — show skeleton loaders (matching pattern in other shell pages) during query loading; show error message with "حاول مرة أخرى" retry button on query failure
-- [ ] T025 [P] Audit RTL layout across all new components — verify `ms-*`/`me-*` instead of `ml-*`/`mr-*` in `ProjectCard.tsx`, `ProjectPnLChart.tsx`, `ProjectCashFlowChart.tsx`; verify `font-heading`, `font-numbers` classes; verify `var(--ink)`, `var(--paper)`, `var(--amber)` tokens are used consistently
-- [ ] T026 Validate full quickstart.md flow end-to-end: seed data → create project → link card → add transaction with project → view per-project dashboard (verify charts and insights) → edit project name → delete a project → confirm transaction survives deletion
+- [x] T024 [P] Add loading and error states to `src/app/(shell)/projects/page.tsx` — show skeleton loaders (matching pattern in other shell pages) during query loading; show error message with "حاول مرة أخرى" retry button on query failure
+- [x] T025 [P] Audit RTL layout across all new components — verify `ms-*`/`me-*` instead of `ml-*`/`mr-*` in `ProjectCard.tsx`, `ProjectPnLChart.tsx`, `ProjectCashFlowChart.tsx`; verify `font-heading`, `font-numbers` classes; verify `var(--ink)`, `var(--paper)`, `var(--amber)` tokens are used consistently
+- [x] T026 Validate full quickstart.md flow end-to-end: seed data → create project → link card → add transaction with project → view per-project dashboard (verify charts and insights) → edit project name → delete a project → confirm transaction survives deletion
 
 ---
 

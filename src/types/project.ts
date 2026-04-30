@@ -58,7 +58,7 @@ export interface CreateTransactionForm {
   transaction_time?: string;
   payment_last4?: string;
   notes?: string;
-  project_id?: string;
+  project_id: string;
   category_id?: string;
 }
 

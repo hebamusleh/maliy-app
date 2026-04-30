@@ -1,18 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import type { DashboardData } from "@/types/index";
 
 export async function GET() {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const user = await getRequestUser();
   const userId = user.id;
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)

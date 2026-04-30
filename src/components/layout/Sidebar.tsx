@@ -73,31 +73,12 @@ const navItems = [
       </svg>
     ),
   },
-  { label: "المشاريع", type: "section" as const },
   {
-    page: "/projects/personal",
-    label: "شخصي",
+    page: "/projects",
+    label: "المشاريع",
     icon: (
       <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="18" height="18">
-        <circle cx="12" cy="8" r="4" /><path strokeLinecap="round" d="M4 21c0-4 4-7 8-7s8 3 8 7" />
-      </svg>
-    ),
-  },
-  {
-    page: "/projects/work",
-    label: "عمل",
-    icon: (
-      <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="18" height="18">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7h18v13H3zM8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      </svg>
-    ),
-  },
-  {
-    page: "/projects/freelance",
-    label: "فريلانس",
-    icon: (
-      <svg fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24" width="18" height="18">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 2L2 7l10 5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
       </svg>
     ),
   },

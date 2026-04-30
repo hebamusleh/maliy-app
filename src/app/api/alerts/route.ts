@@ -1,16 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import type { Alert, AlertCounts } from "@/types/index";
 
 export async function GET(request: Request) {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const url = new URL(request.url);
   const typeFilter = url.searchParams.get("type");

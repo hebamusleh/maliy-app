@@ -37,7 +37,10 @@ async function createTransaction(form: CreateTransactionForm) {
 
 export default function AddTransactionModal({ projects, onClose }: AddTransactionModalProps) {
   const queryClient = useQueryClient();
-  const [form, setForm] = useState<CreateTransactionForm>(defaultForm);
+  const [form, setForm] = useState<CreateTransactionForm>(() => ({
+    ...defaultForm(),
+    project_id: projects.length === 1 ? projects[0].id : "",
+  }));
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -69,7 +72,6 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
       transaction_time: form.transaction_time || undefined,
       payment_last4: form.payment_last4 || undefined,
       notes: form.notes || undefined,
-      project_id: form.project_id || undefined,
     };
     mutation.mutate(payload);
   };
@@ -185,13 +187,14 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
           </div>
 
           <div>
-            <label style={labelStyle}>المشروع</label>
+            <label style={labelStyle}>المشروع *</label>
             <select
               style={inputStyle}
-              value={form.project_id ?? ""}
+              value={form.project_id}
               onChange={(e) => set("project_id", e.target.value)}
+              required
             >
-              <option value="">— اختياري —</option>
+              <option value="">اختر المشروع</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.icon} {p.name}

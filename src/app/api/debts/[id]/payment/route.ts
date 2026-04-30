@@ -1,3 +1,4 @@
+import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(
@@ -5,14 +6,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const user = await getRequestUser();
 
   const body = await request.json();
   const { amount } = body as { amount: number };
