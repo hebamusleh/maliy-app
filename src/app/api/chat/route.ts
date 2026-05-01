@@ -78,6 +78,7 @@ export async function POST(request: Request) {
 
     // Save user message
     const { error: userInsertErr } = await supabase.from("chat_messages").insert({
+      // user_id: user.id,
       role: "user",
       content: message,
       rich_card: null,
@@ -328,7 +329,7 @@ ${recentLines || "  - لا توجد معاملات بعد"}
           { role: "user", content: message },
         ],
         temperature: 0.7,
-        max_tokens: 512,
+        max_tokens: 2048,
       }),
     });
 
@@ -365,8 +366,9 @@ ${recentLines || "  - لا توجد معاملات بعد"}
     const stream = new ReadableStream({
       async start(controller) {
         const encode = (s: string) => new TextEncoder().encode(s);
+        let streamDone = false;
         try {
-          while (true) {
+          while (!streamDone) {
             const { done, value } = await reader.read();
             if (done) break;
 
@@ -377,12 +379,14 @@ ${recentLines || "  - لا توجد معاملات بعد"}
               if (!line.startsWith("data: ")) continue;
               const data = line.slice(6).trim();
               if (data === "[DONE]") {
-                // Do NOT forward [DONE] yet — sent after DB save below
+                streamDone = true;
                 break;
               }
               try {
                 const parsed = JSON.parse(data);
                 const delta = parsed.choices?.[0]?.delta ?? {};
+                // Some models (e.g. reasoning models) put output in
+                // `reasoning` / `reasoning_content` instead of `content`
                 const text = delta.content || delta.reasoning || delta.reasoning_content || "";
                 if (text) {
                   fullContent += text;
@@ -431,6 +435,7 @@ ${recentLines || "  - لا توجد معاملات بعد"}
               // extraction failure must not prevent saving the text reply
             }
             const { error: assistantInsertErr } = await supabase.from("chat_messages").insert({
+              // user_id: user.id,
               role: "assistant",
               content: fullContent,
               rich_card: richCard,
