@@ -30,11 +30,11 @@ async function extractTransaction(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://maliy-app.com",
+        "HTTP-Referer": "http://localhost:3000/",
         "X-Title": "Maliy",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.1-8b-instruct:free",
+        model: "tencent/hy3-preview:free",
         messages: [
           {
             role: "system",
@@ -320,7 +320,7 @@ ${recentLines || "  - لا توجد معاملات بعد"}
         "X-Title": "Maliy",
       },
       body: JSON.stringify({
-        model: "meta-llama/llama-3.1-8b-instruct:free",
+        model: "tencent/hy3-preview:free",
         stream: true,
         messages: [
           { role: "system", content: systemPrompt },
@@ -335,7 +335,7 @@ ${recentLines || "  - لا توجد معاملات بعد"}
     if (!openRouterRes.ok || !openRouterRes.body) {
       const errBody = await openRouterRes.text().catch(() => "");
       console.error("OpenRouter error:", openRouterRes.status, errBody);
-      const fallback = "عذراً، حدث خطأ في الاتصال بالذكاء الاصطناعي. حاول مجدداً بعد قليل.";
+      const fallback = `عذراً، خطأ: ${openRouterRes.status} - ${errBody}`;
       const { error: errInsertErr } = await supabase.from("chat_messages").insert({
         role: "assistant",
         content: fallback,
@@ -382,7 +382,8 @@ ${recentLines || "  - لا توجد معاملات بعد"}
               }
               try {
                 const parsed = JSON.parse(data);
-                const text = parsed.choices?.[0]?.delta?.content ?? "";
+                const delta = parsed.choices?.[0]?.delta ?? {};
+                const text = delta.content || delta.reasoning || delta.reasoning_content || "";
                 if (text) {
                   fullContent += text;
                   controller.enqueue(

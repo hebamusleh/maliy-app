@@ -17,7 +17,8 @@
       "Bash(find:*)",
       "Bash(sed:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(curl:*)"
     ]
   }
 }
