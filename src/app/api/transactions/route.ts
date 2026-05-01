@@ -4,6 +4,24 @@ import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import type { Transaction } from "@/types/project";
 
+/**
+ * Resolve a project_id from a payment card's last-4 digits.
+ * Returns null if no match is found.
+ */
+async function resolveProjectByCard(
+  userId: string,
+  last4: string
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("card_links")
+    .select("project_id")
+    .eq("user_id", userId)
+    .eq("last4", last4)
+    .limit(1)
+    .maybeSingle();
+  return data?.project_id ?? null;
+}
+
 export async function GET(request: Request) {
   const user = await getRequestUser();
 
@@ -49,6 +67,23 @@ export async function POST(request: Request) {
     return Response.json({ error: "حقول مطلوبة ناقصة" }, { status: 400 });
   }
 
+  let projectId: string | null = body.project_id ?? null;
+  let classificationSource: "card" | "manual" | "pending" = "pending";
+  const now = new Date().toISOString();
+
+  // ── Step 1: Auto-assign via linked card (highest priority, skips AI) ──
+  if (body.payment_last4 && !projectId) {
+    const cardProject = await resolveProjectByCard(user.id, body.payment_last4);
+    if (cardProject) {
+      projectId = cardProject;
+      classificationSource = "card";
+    }
+  } else if (projectId) {
+    classificationSource = "manual";
+  }
+
+  const isClassified = classificationSource !== "pending";
+
   const { data, error } = await supabase
     .from("transactions")
     .insert({
@@ -60,8 +95,14 @@ export async function POST(request: Request) {
       transaction_time: body.transaction_time ?? null,
       payment_last4: body.payment_last4 ?? null,
       notes: body.notes ?? null,
-      project_id: body.project_id ?? null,
-      status: body.project_id ? "classified" : "pending",
+      project_id: projectId,
+      status: isClassified ? "classified" : "pending",
+      confidence_score: classificationSource === "card" ? 1.0 : null,
+      ai_reasoning:
+        classificationSource === "card"
+          ? `تم التصنيف تلقائياً عبر البطاقة المرتبطة (••••${body.payment_last4})`
+          : null,
+      classified_at: isClassified ? now : null,
     })
     .select()
     .single();

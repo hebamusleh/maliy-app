@@ -530,11 +530,14 @@ export default function ChatPanel() {
     queryKey: ["chat-messages"],
     queryFn: async () => {
       const res = await fetch("/api/chat/messages");
-      if (!res.ok) return [];
+      // Throw on error so React Query keeps stale (cached) data instead of
+      // wiping messages with an empty array on a transient failure.
+      if (!res.ok) throw new Error("فشل تحميل الرسائل");
       const data = await res.json();
       return data.messages ?? [];
     },
     staleTime: 30_000,
+    retry: 1,
   });
 
   // Proactive insights — called once on mount
@@ -608,31 +611,34 @@ export default function ChatPanel() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullText = "";
+      let streamDone = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (!streamDone) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6);
-          if (data === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.type === "text") {
-              fullText += parsed.content;
-              setStreamingText(fullText);
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6);
+            if (data === "[DONE]") { streamDone = true; break; }
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.type === "text") {
+                fullText += parsed.content;
+                setStreamingText(fullText);
+              }
+            } catch {
+              // ignore malformed chunks
             }
-          } catch {
-            // ignore parse errors
           }
         }
+      } finally {
+        setIsStreaming(false);
+        setStreamingText("");
       }
-
-      setIsStreaming(false);
-      setStreamingText("");
 
       // Append assistant reply to cache without wiping the user message
       if (fullText) {

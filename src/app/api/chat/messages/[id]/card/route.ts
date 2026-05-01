@@ -46,6 +46,9 @@ export async function PATCH(
     // Create the transaction
     const merchant = body.merchant ?? card.merchant;
     const amount = body.amount ?? card.amount;
+    const projectId = body.project_id ?? null;
+    const now = new Date().toISOString();
+
     const { data: tx, error: txErr } = await supabase
       .from("transactions")
       .insert({
@@ -53,9 +56,12 @@ export async function PATCH(
         merchant,
         amount,
         currency: "SAR",
-        date: new Date().toISOString().split("T")[0],
-        project_id: body.project_id ?? null,
-        status: body.project_id ? "classified" : "pending",
+        date: now.split("T")[0],
+        project_id: projectId,
+        status: projectId ? "classified" : "pending",
+        confidence_score: projectId ? (card.confidence / 100) : null,
+        ai_reasoning: projectId ? `تم التأكيد عبر المحادثة (${card.category})` : null,
+        classified_at: projectId ? now : null,
       })
       .select()
       .single();
@@ -70,6 +76,7 @@ export async function PATCH(
       amount,
       transaction_id: tx.id,
       status: "confirmed",
+      suggestions: card.suggestions, // preserve for display
     };
 
     const { data: updatedMsg, error: updateErr } = await supabase
