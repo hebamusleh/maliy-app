@@ -4,6 +4,9 @@ import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
+const VALID_NETWORKS = ["Visa", "Mastercard", "Mada", "Amex", "Other"] as const;
+const VALID_TYPES = ["credit", "debit"] as const;
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -12,17 +15,25 @@ export async function POST(
     const user = await getRequestUser();
     const projectId = (await params).id;
     const body = await request.json();
-    const { last4 } = body;
+    const { last4, cardholder_name, expiry_month, expiry_year, bank_name, card_network, card_type } = body;
 
-    // Validate input
     if (!last4 || !/^\d{4}$/.test(last4)) {
-      return NextResponse.json(
-        { error: "Invalid card number" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "آخر 4 أرقام غير صالحة" }, { status: 400 });
+    }
+    if (card_network && !VALID_NETWORKS.includes(card_network)) {
+      return NextResponse.json({ error: "شبكة بطاقة غير صالحة" }, { status: 400 });
+    }
+    if (card_type && !VALID_TYPES.includes(card_type)) {
+      return NextResponse.json({ error: "نوع بطاقة غير صالح" }, { status: 400 });
+    }
+    if (expiry_month && (expiry_month < 1 || expiry_month > 12)) {
+      return NextResponse.json({ error: "شهر انتهاء صلاحية غير صالح" }, { status: 400 });
+    }
+    if (expiry_year && expiry_year < 2020) {
+      return NextResponse.json({ error: "سنة انتهاء صلاحية غير صالحة" }, { status: 400 });
     }
 
-    // Check if project exists and belongs to user
+    // Check project belongs to user
     const { data: project, error: projectError } = await supabase
       .from("projects")
       .select("id")
@@ -31,11 +42,11 @@ export async function POST(
       .single();
 
     if (projectError || !project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json({ error: "المشروع غير موجود" }, { status: 404 });
     }
 
     // Check for exact duplicate (same project + same last4)
-    const { data: existingLink, error: linkError } = await supabase
+    const { data: existingLink } = await supabase
       .from("card_links")
       .select("id")
       .eq("user_id", user.id)
@@ -43,47 +54,35 @@ export async function POST(
       .eq("last4", last4)
       .maybeSingle();
 
-    if (linkError) {
-      console.error("Database error:", linkError);
-      return NextResponse.json(
-        { error: "Failed to check existing links" },
-        { status: 500 },
-      );
-    }
-
     if (existingLink) {
-      return NextResponse.json(
-        { error: "Card already linked to this project" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "البطاقة مرتبطة بهذا المشروع مسبقاً" }, { status: 400 });
     }
 
-    // Create the link
     const { data, error } = await supabase
       .from("card_links")
       .insert({
         user_id: user.id,
         project_id: projectId,
         last4,
+        cardholder_name: cardholder_name || null,
+        expiry_month: expiry_month || null,
+        expiry_year: expiry_year || null,
+        bank_name: bank_name || null,
+        card_network: card_network || null,
+        card_type: card_type || "credit",
       })
       .select()
       .single();
 
     if (error) {
       console.error("Database error:", error);
-      return NextResponse.json(
-        { error: "Failed to link card" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "فشل ربط البطاقة" }, { status: 500 });
     }
 
     return NextResponse.json({ cardLink: data }, { status: 201 });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "خطأ داخلي" }, { status: 500 });
   }
 }
 
@@ -99,22 +98,17 @@ export async function GET(
       .from("card_links")
       .select("*")
       .eq("user_id", user.id)
-      .eq("project_id", projectId);
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true });
 
     if (error) {
       console.error("Database error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch card links" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "فشل تحميل البطاقات" }, { status: 500 });
     }
 
     return NextResponse.json({ cardLinks: data });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "خطأ داخلي" }, { status: 500 });
   }
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import type { Project } from "@/types/project";
+import type { CardLink, Project } from "@/types/project";
 import type { CreateTransactionForm } from "@/types/project";
 
 interface AddTransactionModalProps {
@@ -34,18 +34,52 @@ async function createTransaction(form: CreateTransactionForm) {
   return res.json();
 }
 
+function formatCard(card: CardLink) {
+  const network = card.card_network ?? "";
+  const bank = card.bank_name ?? "";
+  const type = card.card_type === "debit" ? "مدين" : "ائتماني";
+  const expiry =
+    card.expiry_month && card.expiry_year
+      ? ` · ${String(card.expiry_month).padStart(2, "0")}/${card.expiry_year}`
+      : "";
+  const meta = [network, bank, type].filter(Boolean).join(" · ");
+  return `•••• ${card.last4}${expiry}${meta ? `  (${meta})` : ""}`;
+}
+
 export default function AddTransactionModal({ projects, onClose }: AddTransactionModalProps) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<CreateTransactionForm>(() => ({
     ...defaultForm(),
     project_id: projects.length === 1 ? projects[0].id : "",
   }));
+  const [manualLast4, setManualLast4] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  // Fetch linked cards for the selected project
+  const { data: cardLinksData } = useQuery<{ cardLinks: CardLink[] }>({
+    queryKey: ["cardLinks", form.project_id],
+    queryFn: async () => {
+      if (!form.project_id) return { cardLinks: [] };
+      const res = await fetch(`/api/projects/${form.project_id}/cards`);
+      if (!res.ok) return { cardLinks: [] };
+      return res.json();
+    },
+    enabled: !!form.project_id,
+    staleTime: 60_000,
+  });
+
+  const linkedCards = cardLinksData?.cardLinks ?? [];
+
+  // When project changes, reset card selection
+  useEffect(() => {
+    setForm((f) => ({ ...f, payment_last4: "" }));
+    setManualLast4(false);
+  }, [form.project_id]);
 
   const mutation = useMutation({
     mutationFn: createTransaction,
@@ -122,6 +156,7 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
+          {/* Merchant */}
           <div>
             <label style={labelStyle}>الجهة / التاجر *</label>
             <input
@@ -134,6 +169,7 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
             />
           </div>
 
+          {/* Amount + Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label style={labelStyle}>المبلغ (ريال) *</label>
@@ -161,30 +197,19 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label style={labelStyle}>الوقت</label>
-              <input
-                style={inputStyle}
-                type="time"
-                value={form.transaction_time ?? ""}
-                onChange={(e) => set("transaction_time", e.target.value)}
-                dir="ltr"
-              />
-            </div>
-            <div>
-              <label style={labelStyle}>آخر 4 أرقام البطاقة</label>
-              <input
-                style={inputStyle}
-                value={form.payment_last4 ?? ""}
-                onChange={(e) => set("payment_last4", e.target.value.slice(0, 4))}
-                placeholder="1234"
-                maxLength={4}
-                dir="ltr"
-              />
-            </div>
+          {/* Time */}
+          <div>
+            <label style={labelStyle}>الوقت</label>
+            <input
+              style={inputStyle}
+              type="time"
+              value={form.transaction_time ?? ""}
+              onChange={(e) => set("transaction_time", e.target.value)}
+              dir="ltr"
+            />
           </div>
 
+          {/* Project */}
           <div>
             <label style={labelStyle}>المشروع *</label>
             <select
@@ -202,6 +227,61 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
             </select>
           </div>
 
+          {/* Card selection */}
+          {form.project_id && (
+            <div>
+              <label style={labelStyle}>البطاقة المستخدمة</label>
+              {linkedCards.length > 0 && !manualLast4 ? (
+                <div className="flex flex-col gap-2">
+                  <select
+                    style={inputStyle}
+                    value={form.payment_last4 ?? ""}
+                    onChange={(e) => set("payment_last4", e.target.value)}
+                    dir="rtl"
+                  >
+                    <option value="">بدون بطاقة</option>
+                    {linkedCards.map((card) => (
+                      <option key={card.id} value={card.last4}>
+                        {formatCard(card)}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setManualLast4(true)}
+                    className="text-[11px] text-start underline opacity-50 hover:opacity-80"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    إدخال رقم يدوياً
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <input
+                    style={inputStyle}
+                    value={form.payment_last4 ?? ""}
+                    onChange={(e) => set("payment_last4", e.target.value.slice(0, 4))}
+                    placeholder="آخر 4 أرقام"
+                    maxLength={4}
+                    inputMode="numeric"
+                    dir="ltr"
+                  />
+                  {linkedCards.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setManualLast4(false)}
+                      className="text-[11px] text-start underline opacity-50 hover:opacity-80"
+                      style={{ color: "var(--ink)" }}
+                    >
+                      اختر من البطاقات المرتبطة
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Notes */}
           <div>
             <label style={labelStyle}>ملاحظات</label>
             <textarea

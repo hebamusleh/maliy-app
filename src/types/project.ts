@@ -10,11 +10,20 @@ export interface Project {
   updated_at: string;
 }
 
+export type CardNetwork = "Visa" | "Mastercard" | "Mada" | "Amex" | "Other";
+export type CardType = "credit" | "debit";
+
 export interface CardLink {
   id: string;
   user_id: string;
   project_id: string;
   last4: string;
+  cardholder_name: string | null;
+  expiry_month: number | null;
+  expiry_year: number | null;
+  bank_name: string | null;
+  card_network: CardNetwork | null;
+  card_type: CardType;
   created_at: string;
 }
 
@@ -43,12 +52,25 @@ export interface CreateProjectForm {
   name: string;
   icon: string;
   type: Project["type"];
-  budget_limit?: number;
+  // Optional card to link during project creation
+  card_last4?: string;
+  card_cardholder_name?: string;
+  card_expiry_month?: number;
+  card_expiry_year?: number;
+  card_bank_name?: string;
+  card_network?: CardNetwork;
+  card_type?: CardType;
 }
 
 export interface LinkCardForm {
   project_id: string;
   last4: string;
+  cardholder_name?: string;
+  expiry_month?: number;
+  expiry_year?: number;
+  bank_name?: string;
+  card_network?: CardNetwork;
+  card_type?: CardType;
 }
 
 export interface CreateTransactionForm {

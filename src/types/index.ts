@@ -99,7 +99,6 @@ export type RichCard = TxReceiptCard | ChipsCard | InsightCard;
 
 export interface ChatMessage {
   id: string;
-  user_id: string;
   role: "user" | "assistant";
   content: string;
   rich_card: RichCard | null;

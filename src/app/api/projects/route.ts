@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
         name: body.name,
         icon: body.icon,
         type: body.type,
-        budget_limit: body.budget_limit,
       })
       .select()
       .single();
@@ -37,6 +36,21 @@ export async function POST(request: NextRequest) {
         { error: "Failed to create project" },
         { status: 500 },
       );
+    }
+
+    // Link card if provided
+    if (body.card_last4 && /^\d{4}$/.test(body.card_last4)) {
+      await supabase.from("card_links").insert({
+        user_id: user.id,
+        project_id: data.id,
+        last4: body.card_last4,
+        cardholder_name: body.card_cardholder_name || null,
+        expiry_month: body.card_expiry_month || null,
+        expiry_year: body.card_expiry_year || null,
+        bank_name: body.card_bank_name || null,
+        card_network: body.card_network || null,
+        card_type: body.card_type || "credit",
+      });
     }
 
     return NextResponse.json({ project: data }, { status: 201 });

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import type { Transaction } from "@/types/project";
+import { useQuery } from "@tanstack/react-query";
+import type { CardLink, Transaction } from "@/types/project";
 import ConfidenceMeter from "./ConfidenceMeter";
 
 interface TransactionDetailModalProps {
@@ -48,6 +49,22 @@ export default function TransactionDetailModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [transaction, onClose]);
 
+  // Fetch linked cards to enrich payment_last4 display
+  const { data: cardLinksData } = useQuery<{ cardLinks: CardLink[] }>({
+    queryKey: ["cardLinks", transaction?.project_id],
+    queryFn: async () => {
+      const res = await fetch(`/api/projects/${transaction!.project_id}/cards`);
+      if (!res.ok) return { cardLinks: [] };
+      return res.json();
+    },
+    enabled: !!transaction?.project_id && !!transaction?.payment_last4,
+    staleTime: 5 * 60_000,
+  });
+
+  const matchedCard = cardLinksData?.cardLinks.find(
+    (c) => c.last4 === transaction?.payment_last4
+  ) ?? null;
+
   if (!transaction) return null;
 
   const statusInfo = STATUS_LABELS[transaction.status] ?? STATUS_LABELS.pending;
@@ -77,7 +94,8 @@ export default function TransactionDetailModal({
             </p>
             {transaction.payment_last4 && (
               <p className="text-[12px] opacity-50 mt-0.5 font-heading">
-                •••• {transaction.payment_last4}
+                {matchedCard?.card_network ?? ""} •••• {transaction.payment_last4}
+                {matchedCard?.bank_name ? ` · ${matchedCard.bank_name}` : ""}
               </p>
             )}
           </div>
@@ -130,6 +148,30 @@ export default function TransactionDetailModal({
               {statusInfo.label}
             </span>
           </div>
+
+          {/* Card details */}
+          {matchedCard && (
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] opacity-60 font-heading" style={{ color: "var(--ink)" }}>
+                البطاقة
+              </span>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="text-[13px] font-heading font-semibold" style={{ color: "var(--ink)" }}>
+                  {matchedCard.card_network ?? ""} •••• {matchedCard.last4}
+                </span>
+                {(matchedCard.bank_name || matchedCard.cardholder_name) && (
+                  <span className="text-[11px] opacity-50 font-heading" style={{ color: "var(--ink)" }}>
+                    {[matchedCard.bank_name, matchedCard.cardholder_name].filter(Boolean).join(" · ")}
+                  </span>
+                )}
+                {matchedCard.expiry_month && matchedCard.expiry_year && (
+                  <span className="text-[11px] opacity-40 font-heading" style={{ color: "var(--ink)" }}>
+                    {String(matchedCard.expiry_month).padStart(2, "0")}/{matchedCard.expiry_year}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Project */}
           {transaction.project && (

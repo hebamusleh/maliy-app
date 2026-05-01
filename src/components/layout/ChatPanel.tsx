@@ -575,9 +575,9 @@ export default function ChatPanel() {
 
   const sendMutation = useMutation({
     mutationFn: async (text: string) => {
+      const tempId = `temp-${Date.now()}`;
       const tempUserMsg: ChatMessage = {
-        id: `temp-${Date.now()}`,
-        user_id: "",
+        id: tempId,
         role: "user",
         content: text,
         rich_card: null,
@@ -633,6 +633,23 @@ export default function ChatPanel() {
 
       setIsStreaming(false);
       setStreamingText("");
+
+      // Append assistant reply to cache without wiping the user message
+      if (fullText) {
+        const assistantMsg: ChatMessage = {
+          id: `temp-assistant-${Date.now()}`,
+          role: "assistant",
+          content: fullText,
+          rich_card: null,
+          created_at: new Date().toISOString(),
+        };
+        queryClient.setQueryData<ChatMessage[]>(["chat-messages"], (old = []) => [
+          ...old,
+          assistantMsg,
+        ]);
+      }
+
+      // Sync with server in the background (replaces temp ids with real ones)
       queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
     },
   });

@@ -18,27 +18,9 @@ export async function POST() {
   const { data: projects, error: projError } = await supabase
     .from("projects")
     .insert([
-      {
-        user_id: ANON_USER,
-        name: "الشخصي",
-        icon: "🏠",
-        type: "personal",
-        budget_limit: 3000,
-      },
-      {
-        user_id: ANON_USER,
-        name: "عمل",
-        icon: "💼",
-        type: "business",
-        budget_limit: 10000,
-      },
-      {
-        user_id: ANON_USER,
-        name: "فريلانس",
-        icon: "💻",
-        type: "freelance",
-        budget_limit: 5000,
-      },
+      { user_id: ANON_USER, name: "الشخصي",  icon: "🏠", type: "personal",  budget_limit: 3000  },
+      { user_id: ANON_USER, name: "عمل",      icon: "💼", type: "business",  budget_limit: 10000 },
+      { user_id: ANON_USER, name: "فريلانس",  icon: "💻", type: "freelance", budget_limit: 5000  },
     ])
     .select();
 
@@ -92,6 +74,43 @@ export async function POST() {
     { project_id: freelance.id, amount: -200,  merchant: "Adobe CC",          date: date(0, 6),  status: "pending",    notes: null },
     { project_id: freelance.id, amount: -90,   merchant: "Notion Pro",        date: date(0, 9),  status: "classified", notes: null },
   ];
+
+  // Insert sample card links with full data
+  await supabase.from("card_links").insert([
+    {
+      user_id: ANON_USER,
+      project_id: personal.id,
+      last4: "1234",
+      cardholder_name: "محمد عبدالله",
+      expiry_month: 8,
+      expiry_year: 2027,
+      bank_name: "الراجحي",
+      card_network: "Mada",
+      card_type: "debit",
+    },
+    {
+      user_id: ANON_USER,
+      project_id: work.id,
+      last4: "5678",
+      cardholder_name: "محمد عبدالله",
+      expiry_month: 3,
+      expiry_year: 2026,
+      bank_name: "الأهلي",
+      card_network: "Visa",
+      card_type: "credit",
+    },
+    {
+      user_id: ANON_USER,
+      project_id: freelance.id,
+      last4: "9012",
+      cardholder_name: "محمد عبدالله",
+      expiry_month: 11,
+      expiry_year: 2028,
+      bank_name: "الرياض",
+      card_network: "Mastercard",
+      card_type: "credit",
+    },
+  ]);
 
   const { error: txError } = await supabase.from("transactions").insert(
     txRows.map((t) => ({
