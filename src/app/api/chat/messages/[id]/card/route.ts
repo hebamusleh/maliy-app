@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { strengthenEdges } from "@/lib/knowledge-graph";
 import type { TxReceiptCard } from "@/types/index";
 
 export async function PATCH(
@@ -93,6 +94,15 @@ export async function PATCH(
     if (updateErr) {
       return Response.json({ error: "فشل تحديث البطاقة" }, { status: 500 });
     }
+
+    // Grow the Knowledge Graph: strengthen merchant→category edges
+    strengthenEdges(
+      user.id,
+      tx.id,
+      merchant,
+      card.category ?? null,
+      tx.date
+    ).catch((e) => console.error("KG strengthen failed:", e));
 
     return Response.json({ message: updatedMsg, transaction: tx });
   }

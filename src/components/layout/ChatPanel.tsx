@@ -523,8 +523,26 @@ export default function ChatPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [streamingText, setStreamingText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   // Local overlay for instant card status updates
   const [cardOverrides, setCardOverrides] = useState<Map<string, RichCard>>(new Map());
+
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/chat/messages", { method: "DELETE" });
+      if (!res.ok) throw new Error("فشل مسح المحادثة");
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(["chat-messages"], []);
+      setCardOverrides(new Map());
+      setConfirmClear(false);
+      toast.success("تم مسح المحادثة");
+    },
+    onError: () => {
+      toast.error("فشل مسح المحادثة");
+      setConfirmClear(false);
+    },
+  });
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["chat-messages"],
@@ -692,10 +710,52 @@ export default function ChatPanel() {
             style={{ background: "var(--sage)", border: "2px solid var(--paper)" }}
           />
         </div>
-        <div>
+        <div className="flex-1">
           <b className="block font-heading text-[15px]">ماليّ الذكي</b>
           <small className="text-[11px] opacity-55">مساعدكِ المالي الشخصي</small>
         </div>
+
+        {/* Clear chat button */}
+        {confirmClear ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-heading opacity-60">مسح؟</span>
+            <button
+              onClick={() => clearMutation.mutate()}
+              disabled={clearMutation.isPending}
+              className="rounded-lg px-2 py-1 text-[11px] font-heading disabled:opacity-50"
+              style={{ background: "var(--rose)", color: "white", border: "none" }}
+            >
+              {clearMutation.isPending ? "..." : "نعم"}
+            </button>
+            <button
+              onClick={() => setConfirmClear(false)}
+              className="rounded-lg px-2 py-1 text-[11px] font-heading"
+              style={{ background: "var(--paper-2)", border: "1px solid var(--line)", color: "var(--ink)" }}
+            >
+              لا
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmClear(true)}
+            disabled={isStreaming || sendMutation.isPending}
+            className="w-8 h-8 rounded-xl flex items-center justify-center disabled:opacity-30 transition-opacity"
+            style={{
+              background: "var(--paper-2)",
+              border: "1px solid var(--line)",
+              color: "var(--ink)",
+            }}
+            aria-label="مسح المحادثة"
+            title="مسح المحادثة"
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 6l-1 14H6L5 6" />
+              <path strokeLinecap="round" d="M10 11v6M14 11v6" />
+              <path strokeLinecap="round" d="M9 6V4h6v2" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Messages */}

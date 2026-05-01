@@ -19,3 +19,19 @@ export async function GET() {
 
   return Response.json({ messages: messages ?? [] });
 }
+
+export async function DELETE() {
+  await getRequestUser();
+
+  const { error } = await supabase
+    .from("chat_messages")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000"); // delete all rows
+
+  if (error) {
+    console.error("Failed to clear chat messages:", error);
+    return Response.json({ error: "فشل مسح المحادثة" }, { status: 500 });
+  }
+
+  return Response.json({ success: true });
+}

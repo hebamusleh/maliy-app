@@ -1,9 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import { getRequestUser } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
 import { classifyTransaction } from "@/lib/classification";
-import { getSarToBaseRate, sarToDisplay, CURRENCY_LABELS } from "@/lib/exchange";
+import {
+  CURRENCY_LABELS,
+  getSarToBaseRate,
+  sarToDisplay,
+} from "@/lib/exchange";
+import { supabase } from "@/lib/supabase";
 import { getUserSettings } from "@/lib/user-settings";
 import type { TxReceiptCard } from "@/types/index";
 
@@ -17,12 +21,22 @@ function isTransactionIntent(message: string): boolean {
 
 async function extractTransaction(
   message: string,
-  apiKey: string | undefined
-): Promise<{ merchant: string; amount: number; category: string; confidence: number }> {
+  apiKey: string | undefined,
+): Promise<{
+  merchant: string;
+  amount: number;
+  category: string;
+  confidence: number;
+}> {
   if (!apiKey) {
     const numMatch = message.match(/\d+(\.\d+)?/);
     const amount = numMatch ? -Math.abs(parseFloat(numMatch[0])) : 0;
-    return { merchant: message.slice(0, 30), amount, category: "أخرى", confidence: 0 };
+    return {
+      merchant: message.slice(0, 30),
+      amount,
+      category: "أخرى",
+      confidence: 0,
+    };
   }
   try {
     const res = await fetch(OPENROUTER_API, {
@@ -61,7 +75,12 @@ async function extractTransaction(
   } catch {
     const numMatch = message.match(/\d+(\.\d+)?/);
     const amount = numMatch ? -Math.abs(parseFloat(numMatch[0])) : 0;
-    return { merchant: message.slice(0, 30), amount, category: "أخرى", confidence: 0 };
+    return {
+      merchant: message.slice(0, 30),
+      amount,
+      category: "أخرى",
+      confidence: 0,
+    };
   }
 }
 
@@ -77,13 +96,16 @@ export async function POST(request: Request) {
     }
 
     // Save user message
-    const { error: userInsertErr } = await supabase.from("chat_messages").insert({
-      // user_id: user.id,
-      role: "user",
-      content: message,
-      rich_card: null,
-    });
-    if (userInsertErr) console.error("Failed to save user message:", userInsertErr);
+    const { error: userInsertErr } = await supabase
+      .from("chat_messages")
+      .insert({
+        // user_id: user.id,
+        role: "user",
+        content: message,
+        rich_card: null,
+      });
+    if (userInsertErr)
+      console.error("Failed to save user message:", userInsertErr);
 
     const isTx = isTransactionIntent(message);
 
@@ -103,7 +125,9 @@ export async function POST(request: Request) {
     // Fetch all this-month transactions + their project join
     const { data: txs } = await supabase
       .from("transactions")
-      .select("id, amount, amount_base, currency_original, exchange_rate, status, project_id, merchant, date, payment_last4, confidence_score, ai_reasoning")
+      .select(
+        "id, amount, amount_base, currency_original, exchange_rate, status, project_id, merchant, date, payment_last4, confidence_score, ai_reasoning",
+      )
       .eq("user_id", user.id)
       .gte("date", monthStart)
       .order("date", { ascending: false })
@@ -111,22 +135,37 @@ export async function POST(request: Request) {
 
     const allTxs = txs ?? [];
     const classifiedTxs = allTxs.filter((t) => t.status === "classified");
-    const pendingTxs    = allTxs.filter((t) => t.status === "pending");
+    const pendingTxs = allTxs.filter((t) => t.status === "pending");
     const cardLinkedTxs = classifiedTxs.filter(
-      (t) => t.ai_reasoning?.includes("البطاقة المرتبطة") || t.confidence_score === 1.0
+      (t) =>
+        t.ai_reasoning?.includes("البطاقة المرتبطة") ||
+        t.confidence_score === 1.0,
     );
 
     // Convert amount_base (SAR) to user's base currency for context
-    const income   = cvt(classifiedTxs.reduce((s, t) => s + (t.amount_base > 0 ? t.amount_base : 0), 0));
-    const expenses = cvt(classifiedTxs.reduce((s, t) => s + (t.amount_base < 0 ? Math.abs(t.amount_base) : 0), 0));
+    const income = cvt(
+      classifiedTxs.reduce(
+        (s, t) => s + (t.amount_base > 0 ? t.amount_base : 0),
+        0,
+      ),
+    );
+    const expenses = cvt(
+      classifiedTxs.reduce(
+        (s, t) => s + (t.amount_base < 0 ? Math.abs(t.amount_base) : 0),
+        0,
+      ),
+    );
 
     // Currency diversity insight
-    const foreignTxs = classifiedTxs.filter((t) => (t.currency_original ?? "SAR") !== baseCurrency);
+    const foreignTxs = classifiedTxs.filter(
+      (t) => (t.currency_original ?? "SAR") !== baseCurrency,
+    );
     const foreignExpensesSar = foreignTxs
       .filter((t) => t.amount_base < 0)
       .reduce((s, t) => s + Math.abs(t.amount_base), 0);
     const foreignExpenses = cvt(foreignExpensesSar);
-    const foreignPct = expenses > 0 ? Math.round((foreignExpenses / expenses) * 100) : 0;
+    const foreignPct =
+      expenses > 0 ? Math.round((foreignExpenses / expenses) * 100) : 0;
 
     // Per-project data
     const { data: projects } = await supabase
@@ -144,14 +183,19 @@ export async function POST(request: Request) {
     const projectSpendMap = new Map<string, number>();
     for (const t of classifiedTxs) {
       if (t.project_id && t.amount < 0) {
-        projectSpendMap.set(t.project_id, (projectSpendMap.get(t.project_id) ?? 0) + Math.abs(t.amount));
+        projectSpendMap.set(
+          t.project_id,
+          (projectSpendMap.get(t.project_id) ?? 0) + Math.abs(t.amount),
+        );
       }
     }
 
     const projectLines = (projects ?? [])
       .map((p) => {
         const spend = projectSpendMap.get(p.id) ?? 0;
-        const pct = p.budget_limit ? Math.round((spend / p.budget_limit) * 100) : null;
+        const pct = p.budget_limit
+          ? Math.round((spend / p.budget_limit) * 100)
+          : null;
         const linkedCards = (cardLinks ?? [])
           .filter((c) => c.project_id === p.id)
           .map((c) => `${c.card_network ?? ""} ••••${c.last4}`)
@@ -164,7 +208,10 @@ export async function POST(request: Request) {
     // Recent pending transactions (up to 5) for context
     const pendingLines = pendingTxs
       .slice(0, 5)
-      .map((t) => `  - ${t.merchant ?? "غير معروف"}: ${cvt(Math.abs(t.amount_base)).toFixed(2)} ${baseCurrency} (${t.date})`)
+      .map(
+        (t) =>
+          `  - ${t.merchant ?? "غير معروف"}: ${cvt(Math.abs(t.amount_base)).toFixed(2)} ${baseCurrency} (${t.date})`,
+      )
       .join("\n");
 
     // Recent classified transactions (last 5) for context
@@ -177,9 +224,10 @@ export async function POST(request: Request) {
       })
       .join("\n");
 
-    const foreignCurrencyLine = foreignPct > 0
-      ? `\n- مصروفات بعملات أجنبية: ${foreignExpenses.toFixed(0)} ريال (${foreignPct}% من الإجمالي)`
-      : "";
+    const foreignCurrencyLine =
+      foreignPct > 0
+        ? `\n- مصروفات بعملات أجنبية: ${foreignExpenses.toFixed(0)} ريال (${foreignPct}% من الإجمالي)`
+        : "";
 
     const txInstruction = isTx
       ? "\n\nالمستخدم يسجّل معاملة مالية. أخبره بأنك قمت بتسجيلها وانتظر تأكيده. لا تطلب منه تفاصيل إضافية."
@@ -209,7 +257,8 @@ ${recentLines || "  - لا توجد معاملات بعد"}
 3. المعاملات المرتبطة بالبطاقات تُصنَّف تلقائياً — لا داعي لمراجعتها
 4. شجّع على تصنيف المعاملات المعلّقة إن وُجدت
 5. جميع الأرقام المعروضة بالريال السعودي (بعد تحويل العملات) — هذه هي الحقيقة المالية الكاملة
-6. إن كانت نسبة العملات الأجنبية عالية، يمكنك ذكر تأثير فروق العملة على الميزانية${txInstruction}`;
+6. إن كانت نسبة العملات الأجنبية عالية، يمكنك ذكر تأثير فروق العملة على الميزانية
+7. أعطِ الإجابة النهائية مباشرة — لا تُظهر تفكيراً داخلياً أو خطوات تحليل أو مقدمات من قبيل "دعني أفكر" أو "سأحلل"${txInstruction}`;
 
     // Fetch recent chat history for context window
     const { data: history } = await supabase
@@ -221,7 +270,10 @@ ${recentLines || "  - لا توجد معاملات بعد"}
     const recentMessages = (history ?? [])
       .reverse()
       .slice(-6)
-      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+      .map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      }));
 
     const apiKey = process.env.OPENROUTER_API_KEY;
 
@@ -244,7 +296,7 @@ ${recentLines || "  - لا توجد معاملات بعد"}
               user.id,
               extracted.merchant,
               extracted.amount,
-              { projectNames: (projects ?? []).map((p) => p.name) }
+              { projectNames: (projects ?? []).map((p) => p.name) },
             );
             if (classResult) suggestedProjectId = classResult.project_id;
           }
@@ -268,8 +320,11 @@ ${recentLines || "  - لا توجد معاملات بعد"}
         }));
         if (extracted.suggestedProjectId) {
           suggestions.sort((a, b) =>
-            a.project_id === extracted.suggestedProjectId ? -1
-              : b.project_id === extracted.suggestedProjectId ? 1 : 0
+            a.project_id === extracted.suggestedProjectId
+              ? -1
+              : b.project_id === extracted.suggestedProjectId
+                ? 1
+                : 0,
           );
         }
         richCard = {
@@ -284,19 +339,22 @@ ${recentLines || "  - لا توجد معاملات بعد"}
         };
       }
 
-      const { error: fbInsertErr } = await supabase.from("chat_messages").insert({
-        role: "assistant",
-        content: fallback,
-        rich_card: richCard,
-      });
-      if (fbInsertErr) console.error("Failed to save fallback message:", fbInsertErr);
+      const { error: fbInsertErr } = await supabase
+        .from("chat_messages")
+        .insert({
+          role: "assistant",
+          content: fallback,
+          rich_card: richCard,
+        });
+      if (fbInsertErr)
+        console.error("Failed to save fallback message:", fbInsertErr);
 
       const stream = new ReadableStream({
         start(controller) {
           controller.enqueue(
             new TextEncoder().encode(
-              `data: ${JSON.stringify({ type: "text", content: fallback })}\n\ndata: [DONE]\n\n`
-            )
+              `data: ${JSON.stringify({ type: "text", content: fallback })}\n\ndata: [DONE]\n\n`,
+            ),
           );
           controller.close();
         },
@@ -337,24 +395,31 @@ ${recentLines || "  - لا توجد معاملات بعد"}
       const errBody = await openRouterRes.text().catch(() => "");
       console.error("OpenRouter error:", openRouterRes.status, errBody);
       const fallback = `عذراً، خطأ: ${openRouterRes.status} - ${errBody}`;
-      const { error: errInsertErr } = await supabase.from("chat_messages").insert({
-        role: "assistant",
-        content: fallback,
-        rich_card: null,
-      });
-      if (errInsertErr) console.error("Failed to save error message:", errInsertErr);
+      const { error: errInsertErr } = await supabase
+        .from("chat_messages")
+        .insert({
+          role: "assistant",
+          content: fallback,
+          rich_card: null,
+        });
+      if (errInsertErr)
+        console.error("Failed to save error message:", errInsertErr);
       const errStream = new ReadableStream({
         start(controller) {
           controller.enqueue(
             new TextEncoder().encode(
-              `data: ${JSON.stringify({ type: "text", content: fallback })}\n\ndata: [DONE]\n\n`
-            )
+              `data: ${JSON.stringify({ type: "text", content: fallback })}\n\ndata: [DONE]\n\n`,
+            ),
           );
           controller.close();
         },
       });
       return new Response(errStream, {
-        headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" },
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
       });
     }
 
@@ -387,11 +452,27 @@ ${recentLines || "  - لا توجد معاملات بعد"}
                 const delta = parsed.choices?.[0]?.delta ?? {};
                 // Some models (e.g. reasoning models) put output in
                 // `reasoning` / `reasoning_content` instead of `content`
-                const text = delta.content || delta.reasoning || delta.reasoning_content || "";
+                // const text =
+                //   delta.content ||
+                //   delta.reasoning ||
+                //   delta.reasoning_content ||
+                //   "";
+                // if (text) {
+                //   fullContent += text;
+                //   controller.enqueue(
+                //     encode(
+                //       `data: ${JSON.stringify({ type: "text", content: text })}\n\n`,
+                //     ),
+                //   );
+                // }
+                // ابحث عن هذا الجزء في كود الـ Stream وقم بتعديله
+                const text = delta.content || ""; // تجاهل delta.reasoning تماماً
                 if (text) {
                   fullContent += text;
                   controller.enqueue(
-                    encode(`data: ${JSON.stringify({ type: "text", content: text })}\n\n`)
+                    encode(
+                      `data: ${JSON.stringify({ type: "text", content: text })}\n\n`,
+                    ),
                   );
                 }
               } catch {
@@ -416,8 +497,11 @@ ${recentLines || "  - لا توجد معاملات بعد"}
                 }));
                 if (extracted.suggestedProjectId) {
                   suggestions.sort((a, b) =>
-                    a.project_id === extracted.suggestedProjectId ? -1
-                      : b.project_id === extracted.suggestedProjectId ? 1 : 0
+                    a.project_id === extracted.suggestedProjectId
+                      ? -1
+                      : b.project_id === extracted.suggestedProjectId
+                        ? 1
+                        : 0,
                   );
                 }
                 richCard = {
@@ -434,13 +518,19 @@ ${recentLines || "  - لا توجد معاملات بعد"}
             } catch {
               // extraction failure must not prevent saving the text reply
             }
-            const { error: assistantInsertErr } = await supabase.from("chat_messages").insert({
-              // user_id: user.id,
-              role: "assistant",
-              content: fullContent,
-              rich_card: richCard,
-            });
-            if (assistantInsertErr) console.error("Failed to save assistant message:", assistantInsertErr);
+            const { error: assistantInsertErr } = await supabase
+              .from("chat_messages")
+              .insert({
+                // user_id: user.id,
+                role: "assistant",
+                content: fullContent,
+                rich_card: richCard,
+              });
+            if (assistantInsertErr)
+              console.error(
+                "Failed to save assistant message:",
+                assistantInsertErr,
+              );
           }
           // Send [DONE] AFTER DB write — client's invalidateQueries
           // refetch will always find the saved message.
@@ -460,8 +550,11 @@ ${recentLines || "  - لا توجد معاملات بعد"}
   } catch (err) {
     console.error("POST /api/chat error:", err);
     return Response.json(
-      { error: "خطأ داخلي", details: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
+      {
+        error: "خطأ داخلي",
+        details: err instanceof Error ? err.message : String(err),
+      },
+      { status: 500 },
     );
   }
 }
