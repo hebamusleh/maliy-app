@@ -116,7 +116,7 @@ function ChatComposer({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="اسألني عن أموالك..."
-          className="flex-1 border-0 bg-transparent outline-none font-body text-sm py-2"
+          className="flex-1 border-0 bg-transparent outline-none font-body text-sm py-2 max-w-[250px]"
           style={{ color: "var(--ink)" }}
           aria-label="رسالة للمساعد الذكي"
         />
