@@ -219,28 +219,6 @@ export default function Sidebar() {
           border: "1px solid rgba(244,239,230,0.10)",
         }}
       >
-        <div className="flex items-center gap-2 mb-2.5">
-          <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ background: "var(--sage)" }}
-          />
-          <span className="font-heading text-[11.5px] font-medium">يتعلم منكِ</span>
-        </div>
-        <div className="font-numbers text-[22px] font-medium">87%</div>
-        <div className="text-[11px] opacity-55 mt-0.5">دقة التصنيف التلقائي</div>
-        <div
-          className="mt-2.5 h-1 rounded-sm overflow-hidden"
-          style={{ background: "rgba(244,239,230,0.10)" }}
-        >
-          <div
-            className="h-full rounded-sm"
-            style={{
-              width: "87%",
-              background: "linear-gradient(90deg, var(--sage), var(--amber-2))",
-            }}
-          />
-        </div>
-        <div className="text-[10.5px] opacity-55 mt-2">+3% هذا الأسبوع</div>
       </div>
 
       {/* User footer */}
