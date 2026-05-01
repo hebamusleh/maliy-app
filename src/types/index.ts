@@ -138,6 +138,8 @@ export interface ProjectSummary {
 }
 
 export interface DashboardData {
+  /** ISO currency code of the user's chosen base currency (e.g. "SAR", "USD") */
+  currency: string;
   balance: number;
   income: number;
   expenses: number;
@@ -167,6 +169,8 @@ export interface DailySpend {
 }
 
 export interface AnalyticsData {
+  /** ISO currency code of the user's chosen base currency */
+  currency: string;
   income: number;
   expenses: number;
   daily_average: number;

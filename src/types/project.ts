@@ -31,8 +31,16 @@ export interface Transaction {
   id: string;
   user_id: string;
   project_id: string | null;
+  /** Original amount entered by user, in currency_original. Negative = expense. */
   amount: number;
+  /** Original currency code (e.g. "USD", "EUR"). */
   currency: string;
+  /** Canonical alias for the original currency. */
+  currency_original: string;
+  /** SAR per 1 unit of currency_original at transaction time. */
+  exchange_rate: number;
+  /** Amount converted to SAR (base currency). Used for all analytics. */
+  amount_base: number;
   merchant: string | null;
   date: string;
   status: "classified" | "pending" | "skipped";
@@ -76,6 +84,7 @@ export interface LinkCardForm {
 export interface CreateTransactionForm {
   merchant: string;
   amount: number;
+  currency_original?: string;
   date: string;
   transaction_time?: string;
   payment_last4?: string;

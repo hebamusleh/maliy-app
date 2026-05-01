@@ -77,6 +77,7 @@ export default function DashboardPage() {
         savings={dashboard?.savings ?? 0}
         pendingCount={dashboard?.pending_count ?? 0}
         changePercent={dashboard?.balance_change_pct ?? 0}
+        currency={dashboard?.currency ?? "SAR"}
       />
 
       {/* Project cards */}

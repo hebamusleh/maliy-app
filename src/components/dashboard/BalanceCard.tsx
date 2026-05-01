@@ -7,12 +7,20 @@ interface BalanceCardProps {
   savings: number;
   pendingCount: number;
   changePercent: number;
+  currency?: string;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("ar-SA", { minimumFractionDigits: 0 }).format(
-    Math.round(n)
-  );
+function fmt(n: number, currency = "SAR") {
+  try {
+    return new Intl.NumberFormat("ar-SA", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Math.round(n));
+  } catch {
+    return `${Math.round(n).toLocaleString("ar-SA")} ${currency}`;
+  }
+}
 
 export default function BalanceCard({
   balance,
@@ -21,6 +29,7 @@ export default function BalanceCard({
   savings,
   pendingCount,
   changePercent,
+  currency = "SAR",
 }: BalanceCardProps) {
   return (
     <section
@@ -59,14 +68,8 @@ export default function BalanceCard({
           <div className="text-[12px] tracking-widest opacity-55 mb-2">
             صافي الرصيد لهذا الشهر
           </div>
-          <div className="font-numbers leading-none" style={{ fontSize: 56, letterSpacing: -2 }}>
-            {fmt(balance)}
-            <span
-              className="font-body text-[24px] opacity-60 ms-2 align-top"
-              style={{ verticalAlign: "top" }}
-            >
-              ر.س
-            </span>
+          <div className="font-numbers leading-none" style={{ fontSize: 48, letterSpacing: -2 }}>
+            {fmt(balance, currency)}
           </div>
           {changePercent !== 0 && (
             <div
@@ -102,9 +105,9 @@ export default function BalanceCard({
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3.5 content-start">
           {[
-            { label: "الدخل", value: `+${fmt(income)}`, pos: true },
-            { label: "المصاريف", value: `−${fmt(expenses)}`, neg: true },
-            { label: "ادخار", value: fmt(savings) },
+            { label: "الدخل", value: `+${fmt(income, currency)}`, pos: true },
+            { label: "المصاريف", value: `−${fmt(expenses, currency)}`, neg: true },
+            { label: "ادخار", value: fmt(savings, currency) },
             {
               label: "معلّق",
               value: `${pendingCount} معاملات`,

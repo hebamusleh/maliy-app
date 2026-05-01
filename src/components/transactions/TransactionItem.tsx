@@ -11,12 +11,17 @@ interface TransactionItemProps {
   onClick: (tx: Transaction) => void;
 }
 
-function formatAmount(amount: number) {
-  return new Intl.NumberFormat("ar-SA", {
-    style: "currency",
-    currency: "SAR",
-    maximumFractionDigits: 0,
-  }).format(amount);
+function formatAmount(amount: number, currency = "SAR") {
+  try {
+    return new Intl.NumberFormat("ar-SA", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    // Fallback for unsupported Intl currency codes
+    return `${amount.toFixed(2)} ${currency}`;
+  }
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -88,8 +93,14 @@ export default function TransactionItem({ transaction, onClick }: TransactionIte
           className="font-numbers text-[15px] font-bold"
           style={{ color: transaction.amount < 0 ? "var(--rose)" : "var(--ink)" }}
         >
-          {formatAmount(transaction.amount)}
+          {formatAmount(transaction.amount, transaction.currency_original || transaction.currency || "SAR")}
         </span>
+        {/* Show base-currency equivalent if transaction was in a foreign currency */}
+        {transaction.currency_original && transaction.currency_original !== (transaction.currency || "SAR") && (
+          <span className="font-numbers text-[11px] opacity-40" style={{ color: "var(--ink)" }}>
+            ≈ {formatAmount(transaction.amount_base, "SAR")}
+          </span>
+        )}
         {transaction.confidence_score !== null && transaction.confidence_score !== undefined && (
           <ConfidenceMeter score={transaction.confidence_score} size="sm" />
         )}

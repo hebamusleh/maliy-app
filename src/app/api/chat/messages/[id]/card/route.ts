@@ -49,6 +49,7 @@ export async function PATCH(
     const projectId = body.project_id ?? null;
     const now = new Date().toISOString();
 
+    // Chat-originated transactions are always SAR (chatbot extracts amounts in SAR)
     const { data: tx, error: txErr } = await supabase
       .from("transactions")
       .insert({
@@ -56,6 +57,9 @@ export async function PATCH(
         merchant,
         amount,
         currency: "SAR",
+        currency_original: "SAR",
+        exchange_rate: 1.0,
+        amount_base: amount,
         date: now.split("T")[0],
         project_id: projectId,
         status: projectId ? "classified" : "pending",

@@ -3,23 +3,30 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import type { CardLink, Project } from "@/types/project";
-import type { CreateTransactionForm } from "@/types/project";
+import type { CardLink, Project, CreateTransactionForm } from "@/types/project";
+
+const CURRENCIES = [
+  "SAR", "USD", "EUR", "GBP", "AED", "KWD", "BHD",
+  "QAR", "OMR", "JOD", "EGP", "JPY", "CNY", "INR", "TRY",
+];
 
 interface AddTransactionModalProps {
   projects: Project[];
   onClose: () => void;
 }
 
-const defaultForm = (): CreateTransactionForm => ({
-  merchant: "",
-  amount: 0,
-  date: new Date().toISOString().slice(0, 10),
-  transaction_time: "",
-  payment_last4: "",
-  notes: "",
-  project_id: "",
-});
+function defaultForm(baseCurrency = "SAR"): CreateTransactionForm {
+  return {
+    merchant: "",
+    amount: 0,
+    currency_original: baseCurrency,
+    date: new Date().toISOString().slice(0, 10),
+    transaction_time: "",
+    payment_last4: "",
+    notes: "",
+    project_id: "",
+  };
+}
 
 async function createTransaction(form: CreateTransactionForm) {
   const res = await fetch("/api/transactions", {
@@ -48,10 +55,31 @@ function formatCard(card: CardLink) {
 
 export default function AddTransactionModal({ projects, onClose }: AddTransactionModalProps) {
   const queryClient = useQueryClient();
+
+  const { data: settingsData } = useQuery<{ settings: { base_currency: string } }>({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/settings");
+      if (!res.ok) return { settings: { base_currency: "SAR" } };
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+  const baseCurrency = settingsData?.settings?.base_currency ?? "SAR";
+
   const [form, setForm] = useState<CreateTransactionForm>(() => ({
     ...defaultForm(),
     project_id: projects.length === 1 ? projects[0].id : "",
   }));
+
+  // Sync currency_original default when settings load
+  useEffect(() => {
+    setForm((f) => ({
+      ...f,
+      currency_original: f.currency_original === "SAR" ? baseCurrency : f.currency_original,
+    }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseCurrency]);
   const [manualLast4, setManualLast4] = useState(false);
 
   useEffect(() => {
@@ -169,12 +197,12 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
             />
           </div>
 
-          {/* Amount + Date */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label style={labelStyle}>المبلغ (ريال) *</label>
+          {/* Amount + Currency */}
+          <div>
+            <label style={labelStyle}>المبلغ *</label>
+            <div className="flex gap-2">
               <input
-                style={inputStyle}
+                style={{ ...inputStyle, flex: 1 }}
                 type="number"
                 value={form.amount || ""}
                 onChange={(e) => set("amount", parseFloat(e.target.value) || 0)}
@@ -183,18 +211,38 @@ export default function AddTransactionModal({ projects, onClose }: AddTransactio
                 required
                 dir="ltr"
               />
-            </div>
-            <div>
-              <label style={labelStyle}>التاريخ *</label>
-              <input
-                style={inputStyle}
-                type="date"
-                value={form.date}
-                onChange={(e) => set("date", e.target.value)}
-                required
+              <select
+                style={{ ...inputStyle, width: "auto", minWidth: 80, flex: "0 0 auto" }}
+                value={form.currency_original ?? "SAR"}
+                onChange={(e) => set("currency_original", e.target.value)}
                 dir="ltr"
-              />
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
             </div>
+            {(form.currency_original && form.currency_original !== baseCurrency) && (
+              <p
+                className="text-[11px] mt-1.5 opacity-55"
+                style={{ color: "var(--ink)", fontFamily: "var(--font-heading)" }}
+              >
+                سيتم تحويل المبلغ إلى {baseCurrency} تلقائياً عند الحفظ
+              </p>
+            )}
+          </div>
+
+          {/* Date */}
+          <div>
+            <label style={labelStyle}>التاريخ *</label>
+            <input
+              style={inputStyle}
+              type="date"
+              value={form.date}
+              onChange={(e) => set("date", e.target.value)}
+              required
+              dir="ltr"
+            />
           </div>
 
           {/* Time */}

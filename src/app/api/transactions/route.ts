@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { getExchangeRate, toBaseCurrency, BASE_CURRENCY } from "@/lib/exchange";
 import type { Transaction } from "@/types/project";
 
 /**
@@ -67,6 +68,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "حقول مطلوبة ناقصة" }, { status: 400 });
   }
 
+  const currencyOriginal: string = body.currency_original ?? BASE_CURRENCY;
+  const exchangeRate = await getExchangeRate(currencyOriginal, body.date);
+  const amountBase = toBaseCurrency(Number(body.amount), exchangeRate);
+
   let projectId: string | null = body.project_id ?? null;
   let classificationSource: "card" | "manual" | "pending" = "pending";
   const now = new Date().toISOString();
@@ -90,7 +95,10 @@ export async function POST(request: Request) {
       user_id: user.id,
       merchant: body.merchant,
       amount: body.amount,
-      currency: "SAR",
+      currency: currencyOriginal,
+      currency_original: currencyOriginal,
+      exchange_rate: exchangeRate,
+      amount_base: amountBase,
       date: body.date,
       transaction_time: body.transaction_time ?? null,
       payment_last4: body.payment_last4 ?? null,

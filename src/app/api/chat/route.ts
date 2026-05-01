@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { getRequestUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 import { classifyTransaction } from "@/lib/classification";
+import { getSarToBaseRate, sarToDisplay, CURRENCY_LABELS } from "@/lib/exchange";
+import { getUserSettings } from "@/lib/user-settings";
 import type { TxReceiptCard } from "@/types/index";
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
@@ -86,14 +88,21 @@ export async function POST(request: Request) {
 
     // ── Build dashboard context ──────────────────────────────────────────────
     const now = new Date();
+    const today = now.toISOString().split("T")[0];
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
       .split("T")[0];
 
+    const settings = await getUserSettings(user.id);
+    const baseCurrency = settings.base_currency;
+    const sarToBase = await getSarToBaseRate(baseCurrency, today);
+    const cvt = (sar: number) => sarToDisplay(sar, sarToBase);
+    const currencyLabel = CURRENCY_LABELS[baseCurrency] ?? baseCurrency;
+
     // Fetch all this-month transactions + their project join
     const { data: txs } = await supabase
       .from("transactions")
-      .select("id, amount, status, project_id, merchant, date, payment_last4, confidence_score, ai_reasoning")
+      .select("id, amount, amount_base, currency_original, exchange_rate, status, project_id, merchant, date, payment_last4, confidence_score, ai_reasoning")
       .eq("user_id", user.id)
       .gte("date", monthStart)
       .order("date", { ascending: false })
@@ -106,8 +115,17 @@ export async function POST(request: Request) {
       (t) => t.ai_reasoning?.includes("البطاقة المرتبطة") || t.confidence_score === 1.0
     );
 
-    const income   = classifiedTxs.reduce((s, t) => s + (t.amount > 0 ? t.amount : 0), 0);
-    const expenses = classifiedTxs.reduce((s, t) => s + (t.amount < 0 ? Math.abs(t.amount) : 0), 0);
+    // Convert amount_base (SAR) to user's base currency for context
+    const income   = cvt(classifiedTxs.reduce((s, t) => s + (t.amount_base > 0 ? t.amount_base : 0), 0));
+    const expenses = cvt(classifiedTxs.reduce((s, t) => s + (t.amount_base < 0 ? Math.abs(t.amount_base) : 0), 0));
+
+    // Currency diversity insight
+    const foreignTxs = classifiedTxs.filter((t) => (t.currency_original ?? "SAR") !== baseCurrency);
+    const foreignExpensesSar = foreignTxs
+      .filter((t) => t.amount_base < 0)
+      .reduce((s, t) => s + Math.abs(t.amount_base), 0);
+    const foreignExpenses = cvt(foreignExpensesSar);
+    const foreignPct = expenses > 0 ? Math.round((foreignExpenses / expenses) * 100) : 0;
 
     // Per-project data
     const { data: projects } = await supabase
@@ -137,24 +155,30 @@ export async function POST(request: Request) {
           .filter((c) => c.project_id === p.id)
           .map((c) => `${c.card_network ?? ""} ••••${c.last4}`)
           .join(", ");
-        return `  - ${p.icon} ${p.name} (${p.type}): مصروف ${spend.toFixed(0)} ريال${pct !== null ? ` (${pct}% من الميزانية)` : ""}${linkedCards ? ` | بطاقات: ${linkedCards}` : ""}`;
+        const spendConverted = cvt(spend);
+        return `  - ${p.icon} ${p.name} (${p.type}): مصروف ${spendConverted.toFixed(2)} ${baseCurrency}${pct !== null ? ` (${pct}% من الميزانية)` : ""}${linkedCards ? ` | بطاقات: ${linkedCards}` : ""}`;
       })
       .join("\n");
 
     // Recent pending transactions (up to 5) for context
     const pendingLines = pendingTxs
       .slice(0, 5)
-      .map((t) => `  - ${t.merchant ?? "غير معروف"}: ${Math.abs(t.amount).toFixed(0)} ريال (${t.date})`)
+      .map((t) => `  - ${t.merchant ?? "غير معروف"}: ${cvt(Math.abs(t.amount_base)).toFixed(2)} ${baseCurrency} (${t.date})`)
       .join("\n");
 
     // Recent classified transactions (last 5) for context
     const recentLines = classifiedTxs
       .slice(0, 5)
       .map((t) => {
-        const sign = t.amount > 0 ? "+" : "-";
-        return `  - ${sign}${Math.abs(t.amount).toFixed(0)} ريال — ${t.merchant ?? "—"} (${t.date})`;
+        const baseAmt = cvt(t.amount_base);
+        const sign = baseAmt > 0 ? "+" : "-";
+        return `  - ${sign}${Math.abs(baseAmt).toFixed(2)} ${baseCurrency} — ${t.merchant ?? "—"} (${t.date})`;
       })
       .join("\n");
+
+    const foreignCurrencyLine = foreignPct > 0
+      ? `\n- مصروفات بعملات أجنبية: ${foreignExpenses.toFixed(0)} ريال (${foreignPct}% من الإجمالي)`
+      : "";
 
     const txInstruction = isTx
       ? "\n\nالمستخدم يسجّل معاملة مالية. أخبره بأنك قمت بتسجيلها وانتظر تأكيده. لا تطلب منه تفاصيل إضافية."
@@ -163,11 +187,12 @@ export async function POST(request: Request) {
     const systemPrompt = `أنت ماليّ الذكي، مساعد مالي شخصي باللغة العربية. تحدث دائماً بالعربية الفصحى بأسلوب ودود ومهني.
 
 السياق المالي الحالي للمستخدم (هذا الشهر — ${new Date().toLocaleDateString("ar-SA", { month: "long", year: "numeric" })}):
-- الدخل: ${income.toFixed(0)} ريال
-- المصروفات: ${expenses.toFixed(0)} ريال
-- الرصيد الصافي: ${(income - expenses).toFixed(0)} ريال
+- العملة الأساسية: ${currencyLabel} (${baseCurrency})
+- الدخل: ${income.toFixed(2)} ${baseCurrency}
+- المصروفات: ${expenses.toFixed(2)} ${baseCurrency}
+- الرصيد الصافي: ${(income - expenses).toFixed(2)} ${baseCurrency}
 - معاملات مصنّفة: ${classifiedTxs.length} (منها ${cardLinkedTxs.length} تم ربطها تلقائياً عبر البطاقة)
-- معاملات تنتظر التصنيف: ${pendingTxs.length}
+- معاملات تنتظر التصنيف: ${pendingTxs.length}${foreignCurrencyLine}
 
 الإنفاق حسب المشاريع:
 ${projectLines || "  - لا توجد مشاريع بعد"}
@@ -181,7 +206,9 @@ ${recentLines || "  - لا توجد معاملات بعد"}
 1. ردودك مختصرة ومفيدة (2-4 جمل في الغالب)
 2. استخدم أرقاماً عند الإشارة للمبالغ بالريال
 3. المعاملات المرتبطة بالبطاقات تُصنَّف تلقائياً — لا داعي لمراجعتها
-4. شجّع على تصنيف المعاملات المعلّقة إن وُجدت${txInstruction}`;
+4. شجّع على تصنيف المعاملات المعلّقة إن وُجدت
+5. جميع الأرقام المعروضة بالريال السعودي (بعد تحويل العملات) — هذه هي الحقيقة المالية الكاملة
+6. إن كانت نسبة العملات الأجنبية عالية، يمكنك ذكر تأثير فروق العملة على الميزانية${txInstruction}`;
 
     // Fetch recent chat history for context window
     const { data: history } = await supabase
@@ -288,7 +315,8 @@ ${recentLines || "  - لا توجد معاملات بعد"}
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://maliy-app.com",
+        // "HTTP-Referer": "https://maliy-app.com",
+        "HTTP-Referer": "http://localhost:3000",
         "X-Title": "Maliy",
       },
       body: JSON.stringify({
