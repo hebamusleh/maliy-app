@@ -24,7 +24,6 @@ export async function POST() {
         icon: "🏠",
         type: "personal",
         budget_limit: 3000,
-        currency: "SAR",
       },
       {
         user_id: ANON_USER,
@@ -32,7 +31,6 @@ export async function POST() {
         icon: "💼",
         type: "business",
         budget_limit: 10000,
-        currency: "SAR",
       },
       {
         user_id: ANON_USER,
@@ -40,7 +38,6 @@ export async function POST() {
         icon: "💻",
         type: "freelance",
         budget_limit: 5000,
-        currency: "SAR",
       },
     ])
     .select();
